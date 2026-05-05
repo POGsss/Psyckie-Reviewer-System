@@ -1,0 +1,196 @@
+<div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon red"><img src="assets/Flashcards.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ +8</span>
+      </div>
+      <div class="stat-value">247 <span>cards</span></div>
+      <div class="stat-label">Total Flashcards</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon green"><img src="assets/Progress.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ 12%</span>
+      </div>
+      <div class="stat-value">83 <span>%</span></div>
+      <div class="stat-label">Avg Quiz Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon blue"><img src="assets/Topics.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge neutral">— same</span>
+      </div>
+      <div class="stat-value">14 <span>due</span></div>
+      <div class="stat-label">Cards Due Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon amber"><img src="assets/Mock.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ 2h</span>
+      </div>
+      <div class="stat-value">18 <span>hrs</span></div>
+      <div class="stat-label">Study Time</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+
+      <!-- TOPIC OVERVIEW -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Topic Overview</div>
+            <div class="card-sub">Your mastery across all BLEPP subjects</div>
+          </div>
+          <button class="filter-pill">Last 30 Days ▾</button>
+        </div>
+        <div class="topic-list">
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#E8252A"></div>
+            <span class="topic-name">Psychological Assessment</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:78%;background:#E8252A"></div></div>
+            <span class="topic-pct">78%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#10b981"></div>
+            <span class="topic-name">Abnormal Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:91%;background:#10b981"></div></div>
+            <span class="topic-pct">91%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#3b82f6"></div>
+            <span class="topic-name">Industrial / Org. Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:62%;background:#3b82f6"></div></div>
+            <span class="topic-pct">62%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#f59e0b"></div>
+            <span class="topic-name">Research Methods & Stats</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:55%;background:#f59e0b"></div></div>
+            <span class="topic-pct">55%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#8b5cf6"></div>
+            <span class="topic-name">Theories of Personality</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:84%;background:#8b5cf6"></div></div>
+            <span class="topic-pct">84%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#ec4899"></div>
+            <span class="topic-name">Developmental Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:70%;background:#ec4899"></div></div>
+            <span class="topic-pct">70%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD MATERIAL -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Upload Review Material</div>
+            <div class="card-sub">AI generates flashcards automatically</div>
+          </div>
+        </div>
+
+        <div class="upload-zone" onclick="this.style.borderColor='var(--red)';this.style.background='#fff5f5'">
+          <div class="upload-icon"><img src="assets/Upload.svg" width="18" height="18" alt=""></div>
+          <div class="upload-text">Drop your file here or click to browse</div>
+          <div class="upload-sub">Supports PDF, JPG, PNG</div>
+        </div>
+
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select topic category</option>
+            <option>Psychological Assessment & Testing</option>
+            <option>Abnormal Psychology & Psychopathology</option>
+            <option>Industrial & Organizational Psychology</option>
+            <option>Research Methods & Statistics</option>
+            <option>Theories of Personality</option>
+            <option>Developmental Psychology</option>
+            <option>Social Psychology</option>
+            <option>Counseling & Psychotherapy</option>
+            <option>Biological Bases of Behavior</option>
+          </select>
+        </div>
+
+        <button class="btn-red">
+          Process with AI →
+        </button>
+        <div style="clear:both"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+
+      <!-- PROFILE CARD -->
+      <div class="profile-card">
+        <div class="profile-avatar">T</div>
+        <div class="profile-name">Trisha Marie</div>
+        <div class="profile-email">trishamariemarquito@gmail.com</div>
+        <button class="btn-channel">View Profile</button>
+        <div class="profile-stats">
+          <div class="pstat">
+            <div class="pstat-val">247</div>
+            <div class="pstat-lbl">Flashcards</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-val">12</div>
+            <div class="pstat-lbl">Quizzes Done</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STREAK -->
+      <div class="streak-card">
+        <div class="streak-top">
+          <span class="streak-title">Study Streak</span>
+          <span class="streak-emoji"><img src="assets/Mock.svg" width="18" height="18" style="filter: invert();" alt=""></span>
+        </div>
+        <div class="streak-num">7</div>
+        <div class="streak-sub">Days in a row</div>
+        <div class="streak-days">
+          <div class="streak-day"><div class="streak-dot done"></div>M</div>
+          <div class="streak-day"><div class="streak-dot done"></div>T</div>
+          <div class="streak-day"><div class="streak-dot done"></div>W</div>
+          <div class="streak-day"><div class="streak-dot done"></div>T</div>
+          <div class="streak-day"><div class="streak-dot done"></div>F</div>
+          <div class="streak-day"><div class="streak-dot done"></div>S</div>
+          <div class="streak-day"><div class="streak-dot done"></div>S</div>
+        </div>
+      </div>
+
+      <!-- DUE TODAY -->
+      <div class="due-card">
+        <div class="card-header" style="margin-bottom:0">
+          <div class="card-title">Due Today</div>
+          <button class="btn-red" style="padding:6px 14px;font-size:12px;">Review All</button>
+        </div>
+        <div class="due-list">
+          <div class="due-row">
+            <img class="due-icon" src="assets/Brain.svg" width="18" height="18" alt="">
+            <span>Psych Assessment</span>
+            <span class="due-count">6</span>
+          </div>
+          <div class="due-row">
+            <img class="due-icon" src="assets/Chart.svg" width="18" height="18" alt="">
+            <span>Stats & Research</span>
+            <span class="due-count">5</span>
+          </div>
+          <div class="due-row">
+            <img class="due-icon" src="assets/Bag.svg" width="18" height="18" alt="">
+            <span>Industrial Psych</span>
+            <span class="due-count">3</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>

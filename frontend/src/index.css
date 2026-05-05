@@ -1,0 +1,57 @@
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/dm-serif-display/400.css";
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #E8252A;
+  --color-brand-dark: #c41e22;
+  --color-brand-soft: #FCE8EA;
+
+  --color-base-bg: #f4f5f7;
+  --color-base-card: #ffffff;
+  --color-base-text: #1a1a2e;
+  --color-base-muted: #6b7280;
+  --color-base-border: #e5e7eb;
+  --color-base-green: #10b981;
+  --color-base-orange: #f59e0b;
+  --color-base-blue: #3b82f6;
+
+  --radius-card: 14px;
+
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-cardHover: 0 6px 20px rgba(0, 0, 0, 0.1);
+
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "DM Serif Display", serif;
+}
+
+:root {
+  color: #1a1a2e;
+  background-color: #f4f5f7;
+  font-family: "DM Sans", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f4f5f7;
+  color: #1b1b1f;
+}
+
+#root {
+  min-height: 100vh;
+}
