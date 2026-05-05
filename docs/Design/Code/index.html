@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Psyckie — BLEPP Board Exam Reviewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #E8252A;
+    --red-dark: #c41e22;
+    --white: #ffffff;
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --blue: #3b82f6;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--red);
+    padding: 14px 28px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+
+  /* LEFT: logo on top row, nav links on bottom row — column layout */
+  .nav-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-evenly;
+    gap: 8px;
+  }
+
+  /* RIGHT: user pill on top row, start review on bottom row — column layout */
+  .nav-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-evenly;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: url("assets/logo_solid.svg") no-repeat center/contain;
+  }
+  .logo-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  /* NAV LINKS — left-aligned under logo */
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    list-style: none;
+  }
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-links a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .nav-links a.active { background: rgba(255,255,255,0.2); color: #fff; }
+  .nav-links svg { opacity: 0.8; flex-shrink: 0; }
+  .nav-links a:hover svg, .nav-links a.active svg { opacity: 1; }
+
+  .btn-consult {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: var(--red);
+    border: none;
+    border-radius: 20px;
+    padding: 7px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn-consult:hover { opacity: 0.9; }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 5px 12px 5px 5px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  /* HAMBURGER */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: none;
+    border: none;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px; height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* MOBILE DRAWER */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--red);
+    z-index: 99;
+    padding: 12px 18px 18px;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .mobile-nav.open { display: flex; }
+  .mobile-nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .mobile-nav a:hover, .mobile-nav a.active {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+
+  /* ── HEADER BANNER ── */
+  .header-banner {
+    background: var(--red);
+    padding-bottom: 48px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    max-width: 1100px;
+    margin: -36px auto 0;
+    padding: 0 24px 48px;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+  .stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .stat-icon.red { background: #fde8e8; }
+  .stat-icon.green { background: #d1fae5; }
+  .stat-icon.blue { background: #dbeafe; }
+  .stat-icon.amber { background: #fef3c7; }
+
+  .stat-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .stat-badge.up { background: #d1fae5; color: #065f46; }
+  .stat-badge.down { background: #fde8e8; color: #991b1b; }
+  .stat-badge.neutral { background: #f3f4f6; color: #6b7280; }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .stat-value span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--red);
+  }
+  .stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── BOTTOM GRID ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 18px;
+  }
+
+  /* ── CARD BASE ── */
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .card-sub {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── TOPIC LIST ── */
+  .topic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .topic-row:hover { background: #eaecef; }
+  .topic-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .topic-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .topic-progress-wrap {
+    width: 80px;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .topic-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+  }
+  .topic-pct {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    width: 30px;
+    text-align: right;
+  }
+
+  /* ── UPLOAD CARD ── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 14px;
+  }
+  .upload-zone:hover {
+    border-color: var(--red);
+    background: #fff5f5;
+  }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 13.5px; font-weight: 500; color: var(--text); }
+  .upload-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .select-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .select-wrap select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--muted);
+    background: #fff;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+  }
+  .select-wrap select:focus { border-color: var(--red); }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+    font-size: 12px;
+  }
+
+  .btn-red {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s, transform 0.15s;
+    float: right;
+  }
+  .btn-red:hover { background: var(--red-dark); transform: translateY(-1px); }
+
+  /* ── SIDE CARDS ── */
+  .profile-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #fde8e8;
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--red);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--red);
+  }
+  .profile-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .profile-email {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    margin-bottom: 12px;
+  }
+  .btn-channel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+    margin-bottom: 14px;
+    transition: background 0.15s;
+  }
+  .btn-channel:hover { background: var(--red-dark); }
+  .profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .pstat { text-align: center; }
+  .pstat-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .pstat-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* STREAK CARD */
+  .streak-card {
+    background: var(--red);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(232,37,42,0.25);
+    color: #fff;
+  }
+  .streak-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .streak-title { font-size: 13px; font-weight: 600; opacity: 0.9; }
+  .streak-emoji { font-size: 22px; }
+  .streak-num {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    font-family: 'DM Serif Display', serif;
+  }
+  .streak-sub { font-size: 12px; opacity: 0.8; margin-top: 3px; }
+  .streak-days {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .streak-day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .streak-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+  }
+  .streak-dot.done { background: rgba(255,255,255,0.9); }
+
+  /* DUE CARD */
+  .due-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .due-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .due-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .due-count {
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 2px 7px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* ── FILTER PILL ── */
+  .filter-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--bg);
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .nav-left {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-right {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-links { display: none; }
+    .btn-consult { display: none; }
+    .hamburger { display: flex; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 540px) {
+    .topbar { padding: 10px 18px; gap: 8px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .main { padding: 0 14px 40px; }
+    .stat-value { font-size: 22px; }
+    .card { padding: 18px; }
+    .stat-card { padding: 14px; }
+  }
+
+  @media (max-width: 380px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+
+  /* ANIMATIONS */
+  .stat-card, .card, .profile-card, .streak-card, .due-card {
+    animation: fadeUp 0.4s ease both;
+  }
+  .stats-grid .stat-card:nth-child(1) { animation-delay: 0.05s; }
+  .stats-grid .stat-card:nth-child(2) { animation-delay: 0.1s; }
+  .stats-grid .stat-card:nth-child(3) { animation-delay: 0.15s; }
+  .stats-grid .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar" id="topbar">
+
+  <!-- LEFT: Logo (top) + Nav links (bottom) -->
+  <div class="nav-left">
+    <a href="#" class="logo">
+      <div class="logo-icon"></div>
+      <span class="logo-text">Psyckie</span>
+    </a>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#" class="active">
+          <img src="assets/Dashboard.svg" width="14" height="14" style="filter: invert();" alt="">
+          Dashboard
+        </a></li>
+        <li><a href="#">
+          <img src="assets/Topics.svg" width="14" height="14" style="filter: invert();" alt="">
+          Topics
+        </a></li>
+        <li><a href="#">
+          <img src="assets/Flashcards.svg" width="14" height="14" style="filter: invert();" alt="">
+          Flashcards
+        </a></li>
+        <li><a href="#">
+          <img src="assets/Mock.svg" width="14" height="14" style="filter: invert();" alt="">
+          Mock Exam
+        </a></li>
+        <li><a href="#">
+          <img src="assets/Progress.svg" width="14" height="14" style="filter: invert();" alt="">
+          Progress
+        </a></li>
+        <li><a href="#">
+          <img src="assets/Upload.svg" width="14" height="14" style="filter: invert();" alt="">
+          Upload
+        </a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- RIGHT: User pill (top) + Start Review button (bottom) -->
+  <div class="nav-right">
+    <!-- user pill FIRST -->
+    <div class="user-pill">
+      <div class="user-avatar">T</div>
+      <span class="user-name">Trisha Marie</span>
+    </div>
+    <!-- start review button SECOND -->
+    <button class="btn-consult">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Start Review
+    </button>
+    <!-- hamburger (mobile only) -->
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<nav class="mobile-nav" id="mobileNav">
+  <a href="#" class="active">
+    <img src="assets/Dashboard.svg" width="14" height="14" style="filter: invert();" alt="">
+    Dashboard
+  </a>
+  <a href="#">
+    <img src="assets/Topics.svg" width="14" height="14" style="filter: invert();" alt="">
+    Topics
+  </a>
+  <a href="#">
+    <img src="assets/Flashcards.svg" width="14" height="14" style="filter: invert();" alt="">
+    Flashcards
+  </a>
+  <a href="#">
+    <img src="assets/Mock.svg" width="14" height="14" style="filter: invert();" alt="">
+    Mock Exam
+  </a>
+  <a href="#">
+    <img src="assets/Progress.svg" width="14" height="14" style="filter: invert();" alt="">
+    Progress
+  </a>
+  <a href="#">
+    <img src="assets/Upload.svg" width="14" height="14" style="filter: invert();" alt="">
+    Upload Material
+  </a>
+</nav>
+
+<!-- RED HEADER SPACER -->
+<div class="header-banner"></div>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- STATS ROW -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon red"><img src="assets/Flashcards.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ +8</span>
+      </div>
+      <div class="stat-value">247 <span>cards</span></div>
+      <div class="stat-label">Total Flashcards</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon green"><img src="assets/Progress.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ 12%</span>
+      </div>
+      <div class="stat-value">83 <span>%</span></div>
+      <div class="stat-label">Avg Quiz Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon blue"><img src="assets/Topics.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge neutral">— same</span>
+      </div>
+      <div class="stat-value">14 <span>due</span></div>
+      <div class="stat-label">Cards Due Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon amber"><img src="assets/Mock.svg" width="18" height="18" alt=""></div>
+        <span class="stat-badge up">↑ 2h</span>
+      </div>
+      <div class="stat-value">18 <span>hrs</span></div>
+      <div class="stat-label">Study Time</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+
+      <!-- TOPIC OVERVIEW -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Topic Overview</div>
+            <div class="card-sub">Your mastery across all BLEPP subjects</div>
+          </div>
+          <button class="filter-pill">Last 30 Days ▾</button>
+        </div>
+        <div class="topic-list">
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#E8252A"></div>
+            <span class="topic-name">Psychological Assessment</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:78%;background:#E8252A"></div></div>
+            <span class="topic-pct">78%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#10b981"></div>
+            <span class="topic-name">Abnormal Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:91%;background:#10b981"></div></div>
+            <span class="topic-pct">91%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#3b82f6"></div>
+            <span class="topic-name">Industrial / Org. Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:62%;background:#3b82f6"></div></div>
+            <span class="topic-pct">62%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#f59e0b"></div>
+            <span class="topic-name">Research Methods & Stats</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:55%;background:#f59e0b"></div></div>
+            <span class="topic-pct">55%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#8b5cf6"></div>
+            <span class="topic-name">Theories of Personality</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:84%;background:#8b5cf6"></div></div>
+            <span class="topic-pct">84%</span>
+          </div>
+          <div class="topic-row">
+            <div class="topic-dot" style="background:#ec4899"></div>
+            <span class="topic-name">Developmental Psychology</span>
+            <div class="topic-progress-wrap"><div class="topic-progress-bar" style="width:70%;background:#ec4899"></div></div>
+            <span class="topic-pct">70%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD MATERIAL -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Upload Review Material</div>
+            <div class="card-sub">AI generates flashcards automatically</div>
+          </div>
+        </div>
+
+        <div class="upload-zone" onclick="this.style.borderColor='var(--red)';this.style.background='#fff5f5'">
+          <div class="upload-icon"><img src="assets/Upload.svg" width="18" height="18" alt=""></div>
+          <div class="upload-text">Drop your file here or click to browse</div>
+          <div class="upload-sub">Supports PDF, JPG, PNG</div>
+        </div>
+
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select topic category</option>
+            <option>Psychological Assessment & Testing</option>
+            <option>Abnormal Psychology & Psychopathology</option>
+            <option>Industrial & Organizational Psychology</option>
+            <option>Research Methods & Statistics</option>
+            <option>Theories of Personality</option>
+            <option>Developmental Psychology</option>
+            <option>Social Psychology</option>
+            <option>Counseling & Psychotherapy</option>
+            <option>Biological Bases of Behavior</option>
+          </select>
+        </div>
+
+        <button class="btn-red">
+          Process with AI →
+        </button>
+        <div style="clear:both"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+
+      <!-- PROFILE CARD -->
+      <div class="profile-card">
+        <div class="profile-avatar">T</div>
+        <div class="profile-name">Trisha Marie</div>
+        <div class="profile-email">trishamariemarquito@gmail.com</div>
+        <button class="btn-channel">View Profile</button>
+        <div class="profile-stats">
+          <div class="pstat">
+            <div class="pstat-val">247</div>
+            <div class="pstat-lbl">Flashcards</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-val">12</div>
+            <div class="pstat-lbl">Quizzes Done</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STREAK -->
+      <div class="streak-card">
+        <div class="streak-top">
+          <span class="streak-title">Study Streak</span>
+          <span class="streak-emoji"><img src="assets/Mock.svg" width="18" height="18" style="filter: invert();" alt=""></span>
+        </div>
+        <div class="streak-num">7</div>
+        <div class="streak-sub">Days in a row</div>
+        <div class="streak-days">
+          <div class="streak-day"><div class="streak-dot done"></div>M</div>
+          <div class="streak-day"><div class="streak-dot done"></div>T</div>
+          <div class="streak-day"><div class="streak-dot done"></div>W</div>
+          <div class="streak-day"><div class="streak-dot done"></div>T</div>
+          <div class="streak-day"><div class="streak-dot done"></div>F</div>
+          <div class="streak-day"><div class="streak-dot done"></div>S</div>
+          <div class="streak-day"><div class="streak-dot done"></div>S</div>
+        </div>
+      </div>
+
+      <!-- DUE TODAY -->
+      <div class="due-card">
+        <div class="card-header" style="margin-bottom:0">
+          <div class="card-title">Due Today</div>
+          <button class="btn-red" style="padding:6px 14px;font-size:12px;">Review All</button>
+        </div>
+        <div class="due-list">
+          <div class="due-row">
+            <img class="due-icon" src="assets/Brain.svg" width="18" height="18" alt="">
+            <span>Psych Assessment</span>
+            <span class="due-count">6</span>
+          </div>
+          <div class="due-row">
+            <img class="due-icon" src="assets/Chart.svg" width="18" height="18" alt="">
+            <span>Stats & Research</span>
+            <span class="due-count">5</span>
+          </div>
+          <div class="due-row">
+            <img class="due-icon" src="assets/Bag.svg" width="18" height="18" alt="">
+            <span>Industrial Psych</span>
+            <span class="due-count">3</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  function toggleMenu() {
+    const btn = document.getElementById('hamburger');
+    const nav = document.getElementById('mobileNav');
+    const header = document.getElementById('topbar');
+    // Position drawer right below the header
+    nav.style.top = header.offsetHeight + 'px';
+    btn.classList.toggle('open');
+    nav.classList.toggle('open');
+  }
+
+  // Close mobile nav on link click
+  document.querySelectorAll('.mobile-nav a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.getElementById('hamburger').classList.remove('open');
+      document.getElementById('mobileNav').classList.remove('open');
+    });
+  });
+
+  // Animate progress bars on load
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.topic-progress-bar').forEach(bar => {
+      const target = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => { bar.style.width = target; }, 300);
+    });
+  });
+</script>
+</body>
+</html>
