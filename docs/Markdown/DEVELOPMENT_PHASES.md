@@ -1,825 +1,357 @@
-# Psyckie — Development Phase Guide
-### Prompt-ready instructions per phase for AI-assisted development (Supabase + Express + React + Node.js)
+# Psyckie Development Phases
+
+Spec-driven continuation guide for the current implementation.
+
+This project already has an Express backend, a Supabase schema, JWT authentication, a Vite React frontend, a protected dashboard shell, and the current visual theme. Future agents should continue from the existing codebase instead of recreating the project from scratch.
+
+## Agent Operating Rules
+
+- Inspect the current files before making changes.
+- Preserve the existing app structure unless a phase explicitly requires changing it.
+- Preserve the current visual direction: red Psyckie header, DM Sans body font, DM Serif Display accent headings, light gray app background, white dashboard cards, and the existing SVG asset language.
+- Keep route names and database column names aligned with the current implementation unless a migration is intentionally introduced.
+- Prefer incremental, working vertical slices over large speculative rewrites.
+- Treat this file as a specification, not as code to paste.
+
+## Current Baseline
+
+The implementation currently includes:
+
+- Backend Express app mounted from `backend/server.js`.
+- Supabase client setup in `backend/config/db.js`.
+- JWT auth with signup, login, and current-user lookup.
+- Database schema in `backend/utils/schema.sql`.
+- Seed script for preset topics in `backend/utils/seed.js`.
+- Read-only APIs for topics, materials, flashcards, quizzes, quiz attempts, quiz responses, SRS reviews, and study sessions.
+- Frontend React app with auth store, axios client, login page, signup page, protected layout, header, and a styled dashboard mock.
+- Environment examples in `backend/.env.example` and `frontend/.env.example`.
+
+The current implementation is best understood as Phase 1 partially complete, with a polished dashboard mock that visually previews later phases.
 
 ---
 
-> **How to use this file:**  
-> Each phase contains a ready-to-use prompt block. Copy it and paste it into your AI coding assistant (Cursor, Claude, ChatGPT, etc.) as your starting instruction for that phase. Before each prompt, add your current file tree so the AI knows what already exists.
+# Phase 1: Project Setup and Auth Baseline
 
-> **Stack reminder:** Supabase (PostgreSQL + Auth + Storage) · Express.js · React (Vite) · Node.js · JWT Auth · Gemini AI · Tailwind CSS · Poppins · react-icons/ri
+## Overview
 
----
+Stabilize the existing project foundation without replacing it. The goal is to make the current backend, frontend, Supabase schema, authentication flow, environment setup, and dashboard shell reliably runnable by a new developer.
 
-## PHASE 1 — Project Setup & Authentication
+## Requirements
 
-**Goal:** Scaffold both the backend (Express) and frontend (React), connect to Supabase (PostgreSQL + Auth + Storage), and implement a working JWT-based login and signup flow with protected routes.
+- Keep the existing Express, React, Vite, Zustand, Axios, Tailwind, and Supabase setup.
+- Keep JWT auth as the application auth model.
+- Keep the current `/api/auth/signup`, `/api/auth/login`, and `/api/auth/me` API behavior.
+- Keep the current frontend shell at `/app`.
+- Keep the current visual design theme and layout direction.
+- Make sure the schema, seed script, env examples, and setup instructions are consistent with the current code.
 
-**What you'll have at the end:**
-- Express server running on port 5000 with all routes registered
-- Supabase database with all tables created and BLEPP topics seeded
-- JWT register/login/me endpoints working
-- React frontend with login, signup, and a protected dashboard shell
-- Axios instance in frontend that injects the JWT token on every request
+## User Stories
 
----
+- As a new developer, I can clone the repo, fill in environment variables, run the schema, seed topics, and boot the frontend and backend.
+- As a student, I can create an account, sign in, stay authenticated, and reach the protected dashboard.
+- As a returning user, I can refresh the app and have my session restored from local storage.
 
-### ✦ Phase 1 Prompt
+## Tasks
 
-```
-You are building Psyckie — a BS Psychology BLEPP board exam reviewer app using the PERN stack.
+- Audit backend startup, environment loading, Supabase connection, and auth routes.
+- Verify that `backend/utils/schema.sql` matches the model files currently used by the backend.
+- Verify that `backend/utils/seed.js` works against the current `topics` table shape.
+- Verify that frontend auth redirects are intentional and consistent.
+- Add or update README setup instructions if they are missing or stale.
+- Fix bugs in the current auth flow only if they block Phase 1 acceptance.
+- Keep dashboard data hardcoded for this phase unless wiring one small live value is necessary to prove integration.
 
-TECH STACK:
-- Backend: Node.js + Express.js (CommonJS, no TypeScript), @supabase/supabase-js, JWT (jsonwebtoken), bcrypt, dotenv, cors
-- Frontend: React + Vite + Tailwind CSS + React Router v6 + Zustand + Axios + react-icons (ri set) + Poppins font
-- Database: Supabase (PostgreSQL managed + Auth + Storage)
+## Expected Output
 
-FOLDER STRUCTURE — follow this exactly:
-  backend/
-    config/         ← db.js (pg Pool), gemini.js
-    controllers/    ← authController.js (and others later)
-    middleware/     ← authMiddleware.js, errorMiddleware.js
-    models/         ← userModel.js (and others later)
-    routes/         ← authRoutes.js (and others later)
-    utils/          ← sm2.js, ocr.js (stubs for now)
-    uploads/        ← temp file storage (add to .gitignore)
-    .env
-    server.js
-    package.json
+- A runnable backend on port `5000`.
+- A runnable frontend on port `5173`.
+- A working signup, login, logout, and session restore flow.
+- Supabase schema and seed instructions that match the current implementation.
+- Environment example files that match the current runtime requirements.
 
-  frontend/
-    public/
-    src/
-      assets/
-      components/
-        layout/     ← Header.jsx, MobileDrawer.jsx, ProtectedLayout.jsx
-        ui/         ← Button.jsx, Badge.jsx, Modal.jsx, Skeleton.jsx
-      pages/        ← LoginPage.jsx, SignupPage.jsx, DashboardPage.jsx
-      store/        ← authStore.js (Zustand)
-      hooks/        ← useApi.js
-      lib/          ← axios.js
-      App.jsx
-      main.jsx
-      index.css
-    .env
-    tailwind.config.js
-    vite.config.js
-    package.json
+## Acceptance Criteria
 
-TASKS FOR THIS PHASE:
-
-1. BACKEND SETUP
-   - Initialize backend with: npm init -y
-   - Install: express cors dotenv @supabase/supabase-js jsonwebtoken bcryptjs multer @google/generative-ai
-   - Create backend/.env with:
-       PORT=5000
-       FRONTEND_URL=http://localhost:5173
-       SUPABASE_URL=https://your-project.supabase.co
-       SUPABASE_ANON_KEY=your_anon_key
-       SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-       JWT_SECRET=your_secret_key
-       JWT_EXPIRES_IN=7d
-       GEMINI_API_KEY=
-       SUPABASE_STORAGE_BUCKET=materials
-       EMAIL_USER=
-       EMAIL_PASS=
-
-2. DATABASE
-   - Create backend/config/db.js: initialize Supabase client using process.env.SUPABASE_URL and process.env.SUPABASE_SERVICE_ROLE_KEY, export client
-   - Create and run the migration script in Supabase SQL Editor that creates ALL tables:
-       users, topics, materials, flashcards, srs_reviews, quizzes, quiz_questions,
-       quiz_attempts, quiz_responses, study_sessions
-     Use the exact schema from the architecture doc (UUID PKs, correct FKs, CHECK constraints)
-   - Write backend/config/seed.sql that inserts the 10 BLEPP preset topics with is_preset = true:
-       General Psychology & History, Developmental Psychology, Abnormal Psychology & Psychopathology,
-       Psychological Assessment & Testing, Industrial & Organizational Psychology, Social Psychology,
-       Theories of Personality, Research Methods & Statistics, Counseling & Psychotherapy,
-       Biological Bases of Behavior
-
-3. AUTH BACKEND
-   - backend/models/userModel.js:
-       findByEmail(email), createUser({ display_name, email, password_hash }), findById(id)
-   - backend/controllers/authController.js:
-       register: hash password with bcrypt, insert user, return JWT + user
-       login: find by email, compare password, return JWT + user
-       getMe: return user from req.user (set by middleware)
-   - backend/middleware/authMiddleware.js:
-       verify Authorization: Bearer <token> header using jsonwebtoken
-       attach req.user = { userId, email } on success, return 401 on failure
-   - backend/middleware/errorMiddleware.js:
-       global Express error handler — return { error: message } JSON with correct status
-   - backend/routes/authRoutes.js:
-       POST /register → authController.register
-       POST /login    → authController.login
-       GET  /me       → authMiddleware + authController.getMe
-   - backend/server.js:
-       set up Express, cors, express.json(), mount all routes under /api/*, use errorMiddleware
-       Add placeholder route mounts for: topics, materials, flashcards, srs, quizzes, stats, reminders (so server doesn't crash when other routes are added later)
-
-4. FRONTEND SETUP
-   - Initialize frontend with: npm create vite@latest frontend -- --template react
-   - Install: tailwindcss postcss autoprefixer react-router-dom zustand axios react-icons react-dropzone recharts
-   - Configure Tailwind (tailwind.config.js + index.css with @tailwind directives)
-   - Add Poppins font import to frontend/src/index.css:
-       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-       body { font-family: 'Poppins', sans-serif; background: #F4F5F7; color: #1A1A2E; }
-   - Create frontend/.env: VITE_API_URL=http://localhost:5000
-   - Create frontend/src/lib/axios.js:
-       Axios instance with baseURL = import.meta.env.VITE_API_URL
-       Request interceptor that reads token from localStorage and injects Authorization: Bearer header
-   - Create frontend/src/store/authStore.js (Zustand):
-       state: { user: null, token: null, isLoading: false }
-       actions: login(email, password), register(name, email, password), logout(), initialize()
-       On login/register: call API, store token in localStorage + state
-       initialize(): read token from localStorage on app boot, call /api/auth/me to restore session
-
-5. AUTH FRONTEND PAGES
-   - frontend/src/pages/LoginPage.jsx:
-       Email + password form, "Sign In" button, link to /signup
-       On submit: call authStore.login(), redirect to /dashboard on success
-       Show error message if login fails
-   - frontend/src/pages/SignupPage.jsx:
-       Name + email + password form, link to /login
-       On submit: call authStore.register(), redirect to /dashboard on success
-   - frontend/src/components/layout/ProtectedLayout.jsx:
-       Wraps protected pages — if no token, redirect to /login
-       Renders <Header /> + <Outlet /> for nested routes
-   - frontend/src/components/layout/Header.jsx:
-       Two-row sticky header with flat red (#E8252A) background, no gradient
-       Row 1 left: logo icon (white box, red "P") + "Psyckie" text
-       Row 1 right: user pill (avatar + name)
-       Row 2 left: nav links (Dashboard, Topics, Flashcards, Mock Exam, Progress, Upload) using react-icons/ri
-       Row 2 right: "Start Review" white pill button
-       On mobile (≤640px): both rows switch to flex-row, nav links hidden, hamburger appears
-       Active link: bg-white/20, inactive: text-white/80
-   - frontend/src/App.jsx:
-       Routes: / → LoginPage, /signup → SignupPage
-       Protected: /dashboard, /topics, /topics/:id, /topics/:id/flashcards,
-                  /upload, /review, /quiz/:id, /quiz/:id/results, /progress, /settings
-       On mount: call authStore.initialize()
-   - frontend/src/pages/DashboardPage.jsx:
-       Placeholder — just show "Dashboard — coming in Phase 6" with user's name and logout button
-
-6. DESIGN — match these exact values:
-   - Header bg: #E8252A (flat, no gradient)
-   - Page bg: #F4F5F7
-   - Card bg: #FFFFFF, border-radius: 14px, box-shadow: 0 2px 8px rgba(0,0,0,0.06)
-   - Primary button: bg #E8252A, text white, border-radius 9999px, font Poppins 600
-   - Login/signup cards: centered max-w-md, white card, red "P" logo at top
-
-Provide all file contents in full. Do not use placeholders — write complete, working code.
-```
+- `GET /api/health` returns a healthy response.
+- A new user can sign up from the frontend.
+- An existing user can log in from the frontend.
+- Authenticated users can open `/app`.
+- Unauthenticated users are redirected to `/login`.
+- Refreshing `/app` keeps the user signed in when the token is valid.
+- The preset topic seed can run without schema errors.
 
 ---
 
-## PHASE 2 — Topics & Material Upload
+# Phase 2: Topics and Material Library
 
-**Goal:** Build the topic library, topic detail page, file upload with OCR text extraction, and the material management backend.
+## Overview
 
-**What you'll have at the end:**
-- Topic library page with all 10 BLEPP preset topics displayed
-- Topic detail page showing uploaded materials per topic
-- File upload (PDF or image) with Multer + OCR pipeline
-- Material status badge that polls until processing is done
+Turn the existing read-only topic and material endpoints into a usable topic library and material management flow. This phase should build on the current schema first, then introduce migrations only when required for ownership, upload metadata, or processing status.
 
----
+## Requirements
 
-### ✦ Phase 2 Prompt
+- Preserve the current topic design language shown in the dashboard.
+- Add real frontend routes for topic browsing and topic detail pages.
+- Support preset topics and user-created custom topics if the schema is expanded for ownership.
+- Support material listing per topic.
+- Implement material upload only after the material data model is clearly aligned with the target behavior.
+- Keep protected routes protected where user-owned data is involved.
 
-```
-You are continuing development of Psyckie (PERN stack).
-Phase 1 is complete: Express server running, PostgreSQL connected, JWT auth working, React frontend with login/signup.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/, controllers/, middleware/, models/, routes/, utils/, uploads/, server.js
-  frontend/src/ → assets/, components/layout/, components/ui/, pages/, store/, hooks/, lib/
+- As a student, I can browse BLEPP topic categories.
+- As a student, I can open a topic and see related materials.
+- As a student, I can add a custom topic if the app supports personal organization.
+- As a student, I can upload or create material content for a topic.
 
-TECH STACK: Node.js + Express + PostgreSQL (pg) + React + Vite + Tailwind + Axios + react-icons/ri + Poppins
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Add frontend pages for topics and topic detail using the current red header shell.
+- Connect topic lists to `GET /api/topics`.
+- Add backend create and delete behavior for custom topics if ownership is added.
+- Add material creation or upload behavior based on the current `materials` table or a deliberate migration.
+- Add upload middleware only when file upload is actually implemented.
+- Add OCR processing only after the file upload path works end to end.
+- Add loading, empty, and error states using the existing card and badge style.
 
-1. BACKEND — TOPICS
-   - backend/models/topicModel.js:
-       getAllTopics(userId): SELECT topics WHERE is_preset = true OR user_id = $1
-       createTopic({ user_id, title, description, subject_area }): INSERT, return new topic
-       deleteTopic(id, userId): DELETE WHERE id = $1 AND user_id = $2
-   - backend/controllers/topicController.js:
-       getTopics: call topicModel.getAllTopics(req.user.userId), return JSON
-       createTopic: validate body, call topicModel.createTopic, return 201
-       deleteTopic: call topicModel.deleteTopic, return 200
-   - backend/routes/topicRoutes.js:
-       All routes protected with authMiddleware
-       GET    /       → topicController.getTopics
-       POST   /       → topicController.createTopic
-       DELETE /:id    → topicController.deleteTopic
+## Expected Output
 
-2. BACKEND — MATERIALS + OCR
-   - backend/utils/ocr.js:
-       extractFromPdf(buffer): use pdf-parse, return text string
-       extractFromImage(filePath): use tesseract.js, recognize 'eng', return text string
-   - backend/middleware/uploadMiddleware.js:
-       Configure Multer: dest = 'uploads/', accept pdf/jpg/jpeg/png, max 20MB
-       Export single file upload middleware as uploadMiddleware
-   - backend/models/materialModel.js:
-       createMaterial({ user_id, topic_id, file_name, file_url, file_type, status })
-       updateMaterial(id, { raw_text, status })
-       getMaterialById(id)
-       getMaterialsByTopic(topic_id, user_id)
-       deleteMaterial(id, user_id)
-   - backend/controllers/materialController.js:
-       uploadMaterial:
-         1. Receive file via req.file (Multer), topic_id via req.body
-         2. Upload file to Supabase Storage using @supabase/supabase-js, get public URL
-         3. Insert materials row with status = 'processing'
-         4. Run OCR based on file type (pdf-parse for PDF, tesseract.js for image)
-         5. Update materials row with raw_text and status = 'done'
-         6. Delete temp file from uploads/ with fs.unlink
-         7. Return full material record
-       getMaterial: return material by ID (only if user owns it)
-       deleteMaterial: delete from storage + DB
-   - backend/routes/materialRoutes.js:
-       POST   /upload      → uploadMiddleware + materialController.uploadMaterial
-       GET    /:id         → materialController.getMaterial
-       DELETE /:id         → materialController.deleteMaterial
-   - Install: @supabase/supabase-js pdf-parse tesseract.js
+- `/app/topics` displays live topic data.
+- `/app/topics/:id` displays the selected topic and its materials.
+- Users can add material records or upload files depending on the chosen implementation path.
+- The dashboard upload panel either links to the real material flow or is replaced by the working route.
 
-3. FRONTEND — TOPIC LIBRARY PAGE
-   - frontend/src/pages/TopicsPage.jsx:
-       On mount: GET /api/topics, display in a responsive grid
-       Each topic card: colored left border, title, subject_area badge, "Study →" button → /topics/:id
-       "+" button opens a modal (use Modal.jsx) to create a custom topic
-       Create topic form: title input + description textarea, calls POST /api/topics, refreshes list
-       Preset topics have a special "BLEPP" badge
-   - frontend/src/components/ui/Modal.jsx:
-       Reusable modal with overlay, close button, title prop, children
+## Acceptance Criteria
 
-4. FRONTEND — TOPIC DETAIL PAGE
-   - frontend/src/pages/TopicDetailPage.jsx (route /topics/:id):
-       Fetch topic + its materials on mount
-       Show: topic title, description, subject area badge
-       Materials list: file name, upload date, status badge (yellow=processing, green=done, red=failed)
-       UploadZone component for adding new materials
-       Poll GET /api/materials/:id every 3 seconds for any material with status != 'done'
-       Show "Generate Flashcards" button next to each done material → navigates to /topics/:id/flashcards?material_id=X
-
-5. FRONTEND — UPLOAD ZONE COMPONENT
-   - frontend/src/components/ui/UploadZone.jsx:
-       Uses react-dropzone
-       Dashed border (#E5E7EB), hover: border turns red (#E8252A), bg #FFF5F5
-       Accepts pdf, jpg, png
-       Shows file name after drop
-       On file selected: POST /api/materials/upload as multipart/form-data with file + topic_id
-       Shows upload progress or loading state
-
-6. FRONTEND — NAVIGATION + LAYOUT
-   - frontend/src/components/layout/ProtectedLayout.jsx:
-       Renders <Header /> above <Outlet />
-       All authenticated pages use this as their parent route in App.jsx
-
-7. DESIGN — match design system from DESIGN_GUIDELINES.md:
-   - Topic cards: white bg, 14px radius, shadow-card, colored left border (4px) by topic color
-   - Status badges: yellow=processing, green=done, red=failed (use Badge.jsx)
-   - Topic color assignment: cycle through #E8252A, #10B981, #3B82F6, #F59E0B, #8B5CF6, #EC4899 per topic index
-
-Provide all file contents in full. Do not use placeholders. Install required packages with exact npm install commands.
-```
+- Topic pages use live API data.
+- Material lists can be filtered by topic.
+- User-owned mutations require authentication.
+- Failed API calls show useful UI feedback.
+- The implementation does not break login, signup, or the dashboard shell.
 
 ---
 
-## PHASE 3 — AI Flashcard Generation & Manual Flashcards
+# Phase 3: Flashcards
 
-**Goal:** Use Gemini API to auto-generate flashcards from uploaded material text. Build the flashcard review/edit flow and manual card creation.
+## Overview
 
-**What you'll have at the end:**
-- "Generate Flashcards" flow: Gemini returns cards, user edits/deletes, saves to DB
-- Manual flashcard creation form
-- Flashcard list with CSS flip animation
+Build the flashcard creation, listing, editing, deletion, and review preparation workflow. AI generation may be introduced in this phase only after manual flashcard CRUD is working.
 
----
+## Requirements
 
-### ✦ Phase 3 Prompt
+- Keep the current `flashcards` table shape unless a migration is intentionally planned.
+- Use the current fields `question`, `answer`, `difficulty`, and `topic_id`, or migrate carefully if renaming to `front` and `back`.
+- Build manual flashcard CRUD before AI generation.
+- Keep flashcard UI consistent with the dashboard card system.
+- Do not require Gemini for the basic flashcard feature to work.
 
-```
-You are continuing development of Psyckie (PERN stack).
-Phases 1 and 2 are complete: auth, topics, and material upload with OCR all work.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/(db.js, gemini.js), controllers/, middleware/, models/, routes/, utils/
-  frontend/src/ → components/(layout/, ui/, charts/), pages/, store/, hooks/, lib/
+- As a student, I can see flashcards for a topic.
+- As a student, I can create a flashcard manually.
+- As a student, I can edit or delete my flashcards.
+- As a student, I can generate draft flashcards from processed material when AI is configured.
 
-TECH STACK: Node.js + Express + PostgreSQL + React + Vite + Tailwind + Axios + react-icons/ri + Poppins
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Add protected backend mutations for flashcards.
+- Add frontend flashcard list and manual create/edit/delete UI.
+- Add topic-scoped flashcard filtering.
+- Add AI draft generation only after material text exists and Gemini configuration is added.
+- Add validation for empty questions and answers.
+- Add empty states that guide the user toward creating the first card.
 
-1. BACKEND — GEMINI SETUP
-   - backend/config/gemini.js:
-       const { GoogleGenerativeAI } = require('@google/generative-ai')
-       Initialize with process.env.GEMINI_API_KEY
-       Export getModel() → returns genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+## Expected Output
 
-2. BACKEND — FLASHCARD MODEL & CONTROLLER
-   - backend/models/flashcardModel.js:
-       getFlashcardsByTopic(topic_id, user_id)
-       createFlashcards(cardsArray) ← bulk insert, each: { user_id, topic_id, material_id, front, back, source }
-       updateFlashcard(id, user_id, { front, back })
-       deleteFlashcard(id, user_id)
-   - backend/controllers/flashcardController.js:
-       getFlashcards: query by topic_id + user_id
-       createFlashcards: accept single object or array, bulk insert, return saved cards
-       generateFlashcards:
-         1. Accept { material_id, count = 15 } from req.body
-         2. Fetch material.raw_text from DB — if empty or status != 'done', return 400
-         3. Build Gemini prompt (exact prompt from architecture doc)
-         4. Call Gemini API, parse JSON response
-         5. Return array to frontend (do NOT save yet — user reviews first)
-       updateFlashcard: update front/back for card owned by user
-       deleteFlashcard: delete card owned by user
-   - backend/routes/flashcardRoutes.js:
-       All protected with authMiddleware
-       GET    /            → flashcardController.getFlashcards (query: ?topic_id=)
-       POST   /            → flashcardController.createFlashcards
-       POST   /generate    → flashcardController.generateFlashcards
-       PUT    /:id         → flashcardController.updateFlashcard
-       DELETE /:id         → flashcardController.deleteFlashcard
+- A working flashcard page for topic-specific cards.
+- Manual flashcard CRUD works without AI services.
+- Optional AI-generated draft cards can be reviewed before saving.
 
-3. FRONTEND — FLASHCARD GENERATION REVIEW PAGE
-   - frontend/src/pages/FlashcardsPage.jsx (route /topics/:id/flashcards):
-       Section 1 — Generation Panel (shown when ?material_id= is in URL):
-         "Generate Flashcards" button → POST /api/flashcards/generate
-         Show skeleton loading while Gemini generates
-         Display generated cards in an editable list:
-           Each row: front input (editable) | back textarea (editable) | delete icon (RiDeleteBinLine)
-         "Save All" button → POST /api/flashcards with final array + source = 'ai_generated'
-         "Regenerate" button to call generate again
-       Section 2 — Existing Flashcards:
-         Fetch GET /api/flashcards?topic_id=:id
-         Show cards in a grid, each is a FlashCard component (see below)
-         "Create Manual Card" button opens modal with front/back inputs
-         Count badge: "24 cards"
+## Acceptance Criteria
 
-4. FRONTEND — FLASHCARD COMPONENT
-   - frontend/src/components/ui/FlashCard.jsx:
-       CSS 3D flip animation on click:
-         perspective: 1000px on wrapper
-         card has two faces (front/back) with backface-visibility: hidden
-         transform: rotateY(180deg) when flipped state is true
-       Front face: question/term in bold, centered, Poppins 600
-       Back face: answer/definition in smaller text
-       Edit icon (RiEditLine) and delete icon (RiDeleteBinLine) on hover overlay
-       White bg, 14px border radius, shadow-card, hover shadow-card-hover
-
-5. DESIGN:
-   - Generated card list: clean rows with inline edit inputs, red delete icon on right
-   - Loading: 6 skeleton cards (Skeleton.jsx component, gray pulsing boxes)
-   - Empty state: illustration + "No flashcards yet. Upload material and generate your first set."
-   - Manual card modal: white modal, front label + input, back label + textarea, save button
-
-Provide all file contents in full. Do not use placeholders.
-```
+- Flashcards are persisted in Supabase.
+- Flashcard actions do not expose or mutate another user's private data if ownership is added.
+- Users can create at least one flashcard and see it after refresh.
+- AI failures do not block manual flashcard workflows.
 
 ---
 
-## PHASE 4 — Spaced Repetition Review Session
+# Phase 4: Spaced Repetition Review
 
-**Goal:** Build the daily flashcard review session powered by the SM-2 algorithm. Users flip cards, rate their recall 1–5, and the algorithm schedules the next review date.
+## Overview
 
-**What you'll have at the end:**
-- Daily due card queue fetched from the backend
-- Card flip interaction with 5-point recall rating
-- SM-2 updates saved per card after each review
-- Session summary screen at the end
+Turn flashcards into a daily review queue using the existing `srs_reviews` table as the starting point. Build a real review session with due cards, rating controls, scheduling updates, and a session summary.
 
----
+## Requirements
 
-### ✦ Phase 4 Prompt
+- Keep the existing `srs_reviews` route and model as the baseline.
+- Implement a real scheduling algorithm in a utility module.
+- Make review sessions authenticated.
+- Record study activity when reviews are completed.
+- Keep the review UI focused and mobile-friendly.
 
-```
-You are continuing development of Psyckie (PERN stack).
-Phases 1–3 are complete: auth, topics, material upload, OCR, and AI flashcard generation all work.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/(db.js, gemini.js), controllers/, middleware/, models/, routes/, utils/(sm2.js, ocr.js)
-  frontend/src/ → components/(layout/, ui/, charts/), pages/, store/, hooks/, lib/
+- As a student, I can see which cards are due today.
+- As a student, I can reveal an answer and rate my recall.
+- As a student, I can finish a review session and see a summary.
+- As a student, my next review dates update based on my rating.
 
-TECH STACK: Node.js + Express + PostgreSQL + React + Vite + Tailwind + Axios + react-icons/ri + Poppins
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Add backend endpoints for due cards, submitting a review rating, and review stats.
+- Implement a spaced repetition calculation using the current `due_at`, `interval_days`, and `ease_factor` fields.
+- Create a `/app/review` frontend page.
+- Connect the dashboard due-today panel to live review data.
+- Record study sessions when a review session finishes.
 
-1. BACKEND — SM-2 ALGORITHM
-   - backend/utils/sm2.js — implement exactly:
-       calculateNextReview(srsRecord, rating):
-         if rating < 3: interval = 1, repetitions = 0
-         if rating >= 3:
-           if repetitions === 0: interval = 1
-           if repetitions === 1: interval = 6
-           else: interval = Math.round(interval * ease_factor)
-           repetitions += 1
-         ease_factor = ease_factor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02))
-         ease_factor = Math.max(1.3, ease_factor)
-         due_date = today + interval days (ISO date string)
-         return { ease_factor, interval, repetitions, due_date }
-       initSrsRecord(flashcard_id, user_id):
-         return { flashcard_id, user_id, ease_factor: 2.5, interval: 1, repetitions: 0, due_date: today }
+## Expected Output
 
-2. BACKEND — SRS MODEL & CONTROLLER
-   - backend/models/flashcardModel.js (add to existing):
-       getDueCards(user_id): 
-         SELECT flashcards.*, srs_reviews.* 
-         FROM flashcards 
-         LEFT JOIN srs_reviews ON flashcards.id = srs_reviews.flashcard_id AND srs_reviews.user_id = $1
-         WHERE flashcards.user_id = $1 AND (srs_reviews.due_date <= CURRENT_DATE OR srs_reviews.id IS NULL)
-       getSrsRecord(flashcard_id, user_id)
-       upsertSrsRecord({ flashcard_id, user_id, ease_factor, interval, repetitions, due_date })
-       logStudySession({ user_id, session_type, topic_id, duration_secs, cards_reviewed })
-   - backend/controllers/srsController.js:
-       getDueCards: call getDueCards(userId), return array
-       submitReview:
-         1. Accept { flashcard_id, rating } from req.body
-         2. Get existing srs_reviews row; if none, use initSrsRecord()
-         3. Run calculateNextReview(record, rating)
-         4. Upsert result to srs_reviews table
-         5. Return updated record
-       getSrsStats: per-topic counts of total/due/mastered cards for user
-   - backend/routes/srsRoutes.js:
-       All protected with authMiddleware
-       GET  /due       → srsController.getDueCards
-       POST /review    → srsController.submitReview
-       GET  /stats     → srsController.getSrsStats
+- A daily review queue based on due SRS records.
+- Rating buttons that update the next due date.
+- A review summary screen.
+- Dashboard due counts that reflect real data.
 
-3. FRONTEND — REVIEW SESSION PAGE
-   - frontend/src/pages/ReviewPage.jsx (route /review):
-       On mount: GET /api/srs/due — fetch today's card queue
-       If empty: show "All caught up! 🎉" with next session date + back to dashboard button
-       Show a progress bar at top: "Card 3 of 12"
-       Show current card's FRONT text centered (large, Poppins 700, 24px)
-       "Show Answer" button (white pill, red border) flips card to show BACK
-       After flip: show 5 rating buttons in a row:
-         1 — Blackout (bg #FDE8E8, text red)
-         2 — Wrong (bg #FEE2E2, text red)
-         3 — Hard (bg #FEF9C3, text amber)
-         4 — Good (bg #DCFCE7, text green)
-         5 — Perfect (bg #D1FAE5, text green)
-       On rating click: POST /api/srs/review { flashcard_id, rating }, advance to next card
-       After last card: show SESSION SUMMARY:
-         Cards reviewed, breakdown by rating (how many 1s, 2s, etc.), avg rating
-         Next review date, "Back to Dashboard" red pill button
+## Acceptance Criteria
 
-4. DASHBOARD UPDATE
-   - frontend/src/pages/DashboardPage.jsx — replace placeholder:
-       GET /api/srs/stats to get due card count
-       Show "Due Today" card with count and "Start Review →" button linking to /review
-       Show study streak counter (stub for now, real data in Phase 6)
-       Show 3 quick action buttons: "Review Cards", "Take a Quiz", "View Progress"
-
-5. DESIGN:
-   - Review card: large white card, 3D flip animation, front text 24px Poppins 700
-   - Progress bar: thin #E8252A bar at top showing progress
-   - Rating buttons: full-width on mobile, side-by-side on desktop
-   - Color-coded rating buttons as specified above
-   - Session summary: clean stat layout, motivational message if avg rating > 3.5
-
-Provide all file contents in full. Do not use placeholders.
-```
+- Cards due now appear in the review queue.
+- Reviewing a card updates its SRS record.
+- Completed sessions can be reflected in study session data.
+- Empty review state appears when all cards are caught up.
 
 ---
 
-## PHASE 5 — AI Quiz Generator & Mock Exam Mode
+# Phase 5: Quiz and Mock Exam Mode
 
-**Goal:** Generate MCQ quizzes from uploaded materials using Gemini. Support practice mode (untimed) and mock exam mode (timed). Show a detailed results breakdown with per-question AI explanations.
+## Overview
 
-**What you'll have at the end:**
-- Quiz generation flow from any processed material
-- Timed mock exam mode with auto-submit
-- Results page with score, correct answers, and AI explanations
-- "Explain this" button for wrong answers
+Build quiz generation, quiz attempts, answer capture, scoring, and results. Manual or seeded quizzes should work before AI quiz generation is required.
 
----
+## Requirements
 
-### ✦ Phase 5 Prompt
+- Preserve the current quiz, quiz attempt, and quiz response model boundaries unless a migration is required.
+- Support topic-scoped quizzes.
+- Support quiz attempts and persisted responses.
+- Keep mock exam UI aligned with the current red, white, and gray dashboard theme.
+- Add AI generation only after the quiz data model supports full question, option, answer, and explanation storage.
 
-```
-You are continuing development of Psyckie (PERN stack).
-Phases 1–4 are complete: auth, topics, upload, OCR, flashcard generation, and SRS review all work.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/(db.js, gemini.js), controllers/, middleware/, models/, routes/, utils/(sm2.js, ocr.js)
-  frontend/src/ → components/(layout/, ui/, charts/), pages/, store/, hooks/, lib/
+- As a student, I can start a quiz for a topic.
+- As a student, I can answer questions and submit my attempt.
+- As a student, I can see my score and which answers were correct.
+- As a student, I can use mock exam mode with stricter navigation or timing when available.
 
-TECH STACK: Node.js + Express + PostgreSQL + React + Vite + Tailwind + Axios + react-icons/ri + Poppins
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Review the current quiz schema and add question storage if needed.
+- Add backend endpoints for starting attempts, submitting responses, and returning results.
+- Add frontend quiz session and results pages.
+- Add score calculation and answer correctness storage.
+- Add optional Gemini generation for quizzes from material content.
+- Add route links from dashboard, topics, and header navigation.
 
-1. BACKEND — QUIZ MODEL
-   - backend/models/quizModel.js:
-       createQuiz({ user_id, topic_id, title, mode, time_limit_mins })
-       createQuizQuestions(questionsArray) ← bulk insert for quiz_questions
-       getQuizById(id, user_id) ← return quiz + questions (omit correct_answer in response)
-       getQuizWithAnswers(id, user_id) ← return quiz + questions WITH correct_answer (for scoring)
-       createAttempt({ user_id, quiz_id })
-       saveResponses(responsesArray) ← bulk insert quiz_responses
-       updateAttempt(id, { score, total_questions, time_taken_secs, completed_at })
-       getQuizHistory(user_id) ← past completed attempts with quiz title + score
+## Expected Output
 
-2. BACKEND — QUIZ CONTROLLER
-   - backend/controllers/quizController.js:
-       generateQuiz:
-         1. Accept { material_id, count = 20, mode, time_limit_mins }
-         2. Fetch material.raw_text from DB
-         3. Send to Gemini with exact quiz prompt from architecture doc
-         4. Parse JSON response (array of questions)
-         5. Create quiz row, bulk-insert questions
-         6. Return { quiz_id, question_count }
-       getQuiz: return quiz + questions WITHOUT correct_answer
-       startAttempt: create quiz_attempts row, return attempt_id
-       submitAttempt:
-         1. Accept { attempt_id, responses: [{ question_id, user_answer, time_taken_secs }] }
-         2. Fetch questions WITH correct_answer
-         3. Grade each response (is_correct), calculate score
-         4. Bulk-insert quiz_responses
-         5. Update quiz_attempts with score, time, completed_at
-         6. Also insert study_sessions record
-         7. Return { score, total, responses with correct_answer + explanation }
-       explainAnswer:
-         Accept { question_text, user_answer, correct_answer }
-         Call Gemini with explainer prompt from architecture doc
-         Return { explanation }
-       getHistory: return quiz history for user
-   - backend/routes/quizRoutes.js:
-       All protected with authMiddleware
-       POST /generate     → quizController.generateQuiz
-       GET  /history      → quizController.getHistory
-       GET  /:id          → quizController.getQuiz
-       POST /:id/attempt  → quizController.startAttempt
-       POST /:id/submit   → quizController.submitAttempt
-       POST /explain      → quizController.explainAnswer
+- Users can complete a quiz attempt end to end.
+- Quiz responses are persisted.
+- Results show score, answer status, and review information.
+- Mock exam mode can be enabled without disrupting practice mode.
 
-3. FRONTEND — QUIZ GENERATION UI
-   On topic detail page (TopicDetailPage.jsx), next to each processed material:
-   - "Generate Quiz" button opens a modal:
-       Select count (10 / 20 / 30), mode (Practice / Mock Exam), time limit if mock exam
-       On submit: POST /api/quizzes/generate, then navigate to /quiz/:id
+## Acceptance Criteria
 
-4. FRONTEND — QUIZ SESSION PAGE
-   - frontend/src/pages/QuizPage.jsx (route /quiz/:id):
-       On mount: GET /api/quizzes/:id, POST /api/quizzes/:id/attempt
-       Show one question at a time
-       Progress: "Question 5 of 20"
-       4 answer option buttons (full-width, white bg, hover: red border)
-       Selected answer: highlight in indigo
-       If time_limit_mins set: countdown timer badge (top right), red when < 60 seconds, auto-submit at 0
-       Track time per question
-       Practice mode: can navigate back; mock exam mode: cannot go back
-       "Next" button → advance; on last question: "Submit Quiz"
-
-5. FRONTEND — QUIZ RESULTS PAGE
-   - frontend/src/pages/QuizResultsPage.jsx (route /quiz/:id/results):
-       Receive results from navigation state or re-fetch
-       Score circle: large (score/total %) in red if < 75%, green if >= 75%
-       Pass/fail badge: "PASSED ✓" (green) or "NEEDS REVIEW ✗" (red) — BLEPP passing = 75%
-       Question list (all questions):
-         Question text
-         User's answer (green chip if correct, red chip if wrong)
-         Correct answer shown for wrong answers only
-         Explanation text collapsed by default, expand on click
-         "Explain this" button for wrong answers:
-           POST /api/quizzes/explain → show AI explanation inline with spinner while loading
-       "Retake Quiz" and "Back to Topics" buttons
-
-6. DESIGN:
-   - Quiz options: large rounded buttons (12px radius), selected = bg red-light + red border
-   - Timer: pill badge, red bg when < 60s
-   - Score circle: large (100px diameter), stroke-dasharray animation on mount
-   - Explain button: small outline pill button (border #E8252A, text #E8252A)
-
-Provide all file contents in full. Do not use placeholders.
-```
+- A quiz can be opened from the frontend.
+- A quiz attempt can be submitted.
+- Results remain available after refresh or navigation.
+- Bad or incomplete submissions are validated server-side.
 
 ---
 
-## PHASE 6 — Progress Dashboard & Weak Topic Detection
+# Phase 6: Progress Dashboard
 
-**Goal:** Build the full progress dashboard with Recharts visualizations, study streak calculation, weak topic detection, and time-studied tracking.
+## Overview
 
-**What you'll have at the end:**
-- Complete stat dashboard with 4 overview tiles
-- Quiz score history line chart with 75% threshold line
-- Cards overview donut chart
-- Weak topics table with Study Now buttons
-- Study time bar chart
+Replace hardcoded dashboard metrics with live progress data and add a dedicated progress page. This phase should preserve the current dashboard layout while wiring it to real backend stats.
 
----
+## Requirements
 
-### ✦ Phase 6 Prompt
+- Preserve the current dashboard visual composition as much as possible.
+- Replace hardcoded cards, topic mastery rows, due counts, streaks, and profile stats with API data.
+- Add backend stats endpoints for dashboard and progress views.
+- Use compact, scannable charts only where they help the student understand progress.
 
-```
-You are continuing development of Psyckie (PERN stack).
-Phases 1–5 are complete: all core study features work — auth, topics, upload, flashcards, SRS, quizzes, results.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/(db.js, gemini.js), controllers/, middleware/, models/, routes/, utils/
-  frontend/src/ → components/(layout/, ui/, charts/), pages/, store/, hooks/, lib/
+- As a student, I can see how many cards I have, how many are due, and how many quizzes I completed.
+- As a student, I can see weak topics and decide what to study next.
+- As a student, I can track quiz score trends and study time.
+- As a student, I can see my study streak.
 
-TECH STACK: Node.js + Express + PostgreSQL + React + Vite + Tailwind + Recharts + Axios + react-icons/ri + Poppins
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Add backend stats model, controller, and routes.
+- Compute dashboard totals from flashcards, SRS reviews, quiz attempts, quiz responses, and study sessions.
+- Add weak-topic detection based on quiz performance.
+- Add frontend progress page.
+- Replace hardcoded dashboard numbers with API data.
+- Add skeleton states that match the current UI.
 
-1. BACKEND — STATS MODEL
-   - backend/models/statsModel.js:
-       getDashboardStats(user_id): single function returning:
-         total_flashcards, cards_due_today, cards_mastered (interval > 21),
-         quizzes_taken, average_quiz_score, cards_reviewed_this_week,
-         recent_quiz_scores (last 7 attempts: { date, score, quiz_title })
-       getWeakTopics(user_id):
-         Topics with at least 1 completed attempt, sorted by avg score ASC
-         Return top 5: { topic_id, topic_title, average_score, attempts_count, last_attempted }
-       getStreak(user_id):
-         Query study_sessions grouped by DATE(started_at)
-         Calculate current_streak (consecutive days up to today)
-         Calculate longest_streak (max consecutive day run)
-         Return { current_streak, longest_streak, last_studied_date }
-       getStudyTimeThisWeek(user_id):
-         Return array of { day: 'Mon', minutes: N } for the last 7 days
+## Expected Output
 
-2. BACKEND — STATS CONTROLLER & ROUTES
-   - backend/controllers/statsController.js:
-       getDashboard: call all statsModel functions, combine into one response, return JSON
-       getWeakTopics: call statsModel.getWeakTopics
-       getStreak: call statsModel.getStreak
-   - backend/routes/statsRoutes.js:
-       All protected with authMiddleware
-       GET /dashboard    → statsController.getDashboard
-       GET /weak-topics  → statsController.getWeakTopics
-       GET /streak       → statsController.getStreak
+- Dashboard reflects live user data.
+- Progress page displays score history, cards overview, weak topics, and study time.
+- Empty accounts show motivating empty states instead of fake values.
 
-3. FRONTEND — CHART COMPONENTS
-   - frontend/src/components/charts/ScoreLineChart.jsx:
-       Recharts LineChart, data = recent_quiz_scores
-       X: date, Y: score (0–100)
-       ReferenceLine at y=75 with label "BLEPP Pass Threshold" in red
-       Line color: #E8252A, tooltip showing quiz_title + score
+## Acceptance Criteria
 
-   - frontend/src/components/charts/CardsDonutChart.jsx:
-       Recharts PieChart (donut style, innerRadius=60)
-       Segments: Due Today (red #E8252A), Mastered (green #10B981), In Progress (blue #3B82F6), New (gray #9CA3AF)
-       Legend below
-
-   - frontend/src/components/charts/StudyBarChart.jsx:
-       Recharts BarChart, data = study time per day (Mon–Sun)
-       Bars: fill #E8252A, X: day label, Y: minutes
-
-4. FRONTEND — PROGRESS PAGE
-   - frontend/src/pages/ProgressPage.jsx (route /progress):
-       On mount: GET /api/stats/dashboard + GET /api/stats/weak-topics + GET /api/stats/streak
-       Section 1 — 4 stat tiles (grid-cols-4 → grid-cols-2 on mobile):
-         Cards Due Today (red icon, link to /review)
-         Cards Mastered (green icon)
-         Study Streak — N days 🔥 (amber icon, animated pulse if > 7)
-         Avg Quiz Score — N% (blue icon)
-       Section 2 — Quiz Score History: <ScoreLineChart />
-       Section 3 — Cards Overview: <CardsDonutChart />
-       Section 4 — Weak Topics table:
-         Columns: Topic | Avg Score | Quizzes | Action
-         Avg Score: red text if < 60%, amber if 60–74%, green if >= 75%
-         Action: "Study Now →" red pill button → /topics/:id
-       Section 5 — Study Time This Week: <StudyBarChart />
-
-5. DASHBOARD FINAL UPDATE
-   - frontend/src/pages/DashboardPage.jsx — fully complete:
-       GET /api/stats/dashboard + /api/stats/streak
-       Row 1: 4 stat tiles same as progress page
-       Row 2 left: Top 3 weak topics (card with red/amber/green score badges) + "See all →" link to /progress
-       Row 2 right: Profile card (avatar, name, email, BLEPP badge, flashcard + quiz counts)
-                    Streak card (red bg, big number, 7-day dot row)
-                    Due Today card (list of due topics with counts)
-
-6. DESIGN — match DESIGN_GUIDELINES.md exactly:
-   - Stat tile icons: 38×38px colored bg boxes, react-icons/ri icons
-   - Charts: ResponsiveContainer wrapper, clean axis labels in Poppins 12px
-   - Weak topic table rows: left border colored by score (red/amber/green)
-   - All cards: bg white, 14px radius, shadow 0 2px 8px rgba(0,0,0,0.06)
-
-Provide all file contents in full. Do not use placeholders.
-```
+- Dashboard metrics change when user data changes.
+- Weak topics are computed from persisted quiz results.
+- Progress page works for both new and active users.
+- Loading and error states do not break the protected shell.
 
 ---
 
-## PHASE 7 — Polish, Email Reminders & Mobile Optimization
+# Phase 7: Polish, Settings, Reminders, and Mobile
 
-**Goal:** Final polish pass — email study reminders via Nodemailer, streak milestone celebrations, complete mobile UI, loading states, and error handling.
+## Overview
 
-**What you'll have at the end:**
-- Daily email reminders via Nodemailer + Gmail SMTP
-- Streak milestone modals with confetti
-- Fully polished mobile UI with bottom tab nav
-- Skeleton loading states and error boundaries throughout
+Finish the app experience with settings, reminders, mobile polish, error handling, and production readiness. This phase should refine the existing product rather than change its core architecture.
 
----
+## Requirements
 
-### ✦ Phase 7 Prompt
+- Keep the existing theme and route structure.
+- Add settings only after the user profile API supports updates.
+- Add reminders only after due-card data is reliable.
+- Add production-minded error handling, loading states, and documentation.
+- Ensure mobile navigation works across all implemented routes.
 
-```
-You are finishing development of Psyckie (PERN stack).
-Phases 1–6 are complete. All features work: auth, topics, upload, OCR, flashcards, SRS, quizzes, progress dashboard.
+## User Stories
 
-FOLDER STRUCTURE:
-  backend/  → config/(db.js, gemini.js), controllers/(all), middleware/(all), models/(all), routes/(all), utils/(sm2.js, ocr.js)
-  frontend/src/ → components/(layout/, ui/, charts/), pages/(all), store/, hooks/, lib/
+- As a student, I can manage my profile and preferences.
+- As a student, I can receive reminders when I have due cards.
+- As a mobile user, I can navigate the app comfortably on a small screen.
+- As a developer, I can deploy the app with clear environment and setup instructions.
 
-TECH STACK: Node.js + Express + PostgreSQL + React + Vite + Tailwind + Axios + react-icons/ri + Poppins + Nodemailer
+## Tasks
 
-TASKS FOR THIS PHASE:
+- Add settings API and frontend page.
+- Add email reminder infrastructure only if email variables are configured.
+- Add complete mobile navigation for implemented pages.
+- Add toast notifications for key create, update, delete, and failure events.
+- Add error boundaries and friendly fallback screens.
+- Add deployment notes for Supabase, frontend hosting, and backend hosting.
+- Clean up unused template artifacts after confirming they are not imported.
 
-1. EMAIL REMINDERS (Nodemailer)
-   - Install: nodemailer
-   - Add to backend/.env: EMAIL_USER, EMAIL_PASS (Gmail app password)
-   - backend/controllers/reminderController.js:
-       sendReminders:
-         1. Query all users with srs_reviews.due_date <= today (at least 1 card)
-         2. For each user, send email via Nodemailer (Gmail SMTP, port 587):
-            Subject: "You have {count} cards due for review today 📚"
-            HTML body: card count, "Start Reviewing" button linking to FRONTEND_URL/review, motivational quote
-         3. Return { sent: N } JSON
-   - backend/routes/reminderRoutes.js:
-       POST /send → reminderController.sendReminders (can be called manually or via cron)
-   - Add a note in README: set up a free cron job at cron-job.org to POST to /api/reminders/send daily at 8AM PHT
+## Expected Output
 
-2. SETTINGS PAGE
-   - frontend/src/pages/SettingsPage.jsx (route /settings):
-       Display name update: input + "Save" → PUT /api/auth/me
-       Email reminders toggle: on/off → PATCH /api/users/settings { email_reminders: boolean }
-       "Delete my account" button with confirmation modal → DELETE /api/auth/me (cascade deletes all data)
-       Show Gemini API free tier note: "15 requests/min, 1,500 req/day"
-   - Add PUT /api/auth/me and DELETE /api/auth/me to authController + authRoutes
+- A polished app with complete navigation and resilient UI states.
+- Settings and reminders work when configured.
+- Setup and deployment instructions are current.
+- The app is ready for broader testing.
 
-3. STREAK MILESTONE CELEBRATIONS
-   - Install: canvas-confetti
-   - frontend/src/components/ui/StreakModal.jsx:
-       Shown when streak reaches 3, 7, 14, or 30 days
-       Fire canvas-confetti on mount
-       Show milestone badge name: "3 Day Starter", "Week Warrior", "2 Week Legend", "Month Master"
-       "Keep it up!" close button
-       Track shown milestones in localStorage key 'Psyckie_milestones' to never show twice
-   - Add to DashboardPage and ReviewPage: check streak after each session, show StreakModal if milestone hit
+## Acceptance Criteria
 
-4. MOBILE UI POLISH
-   - frontend/src/components/layout/MobileDrawer.jsx: already exists, finalize it
-   - Add a MobileTabBar.jsx component (shown only on mobile ≤640px):
-       Fixed bottom bar with 4 tabs: Dashboard (RiDashboardLine), Topics (RiBookOpenLine), Review (RiTimeLine), Progress (RiBarChartLine)
-       Active tab: red icon + red underline dot
-       Hidden on desktop (hidden md:flex)
-   - Audit every page at 375px width — fix any overflow, cramped spacing, or hidden content
-   - Quiz answer buttons: w-full on mobile
-   - Flashcard flip: works on tap (not just hover)
-   - Upload zone: add accept="image/*,application/pdf" and capture="environment" for mobile camera
+- Core workflows work on desktop and mobile.
+- Missing optional integrations fail gracefully.
+- The app has no obvious dead links in the header or dashboard.
+- Documentation matches the final implemented routes, env vars, schema, and commands.
 
-5. LOADING STATES
-   - frontend/src/components/ui/Skeleton.jsx:
-       Reusable skeleton block: gray pulsing rounded box (animate-pulse)
-       Props: width, height, className
-   - Add skeleton states to: DashboardPage (4 stat tiles), TopicsPage (grid), FlashcardsPage (card list), QuizPage (question loading), ProgressPage (charts)
-   - Add empty states with icons for: no topics, no flashcards, no materials, no quiz history
-   - Wrap App in an ErrorBoundary component that shows a friendly "Something went wrong" page with a reload button
-
-6. TOAST NOTIFICATIONS
-   - Install: react-hot-toast
-   - Add <Toaster /> to App.jsx
-   - Add toast.success / toast.error calls in:
-       Login fail, signup fail
-       Flashcard saved, deleted
-       Quiz submitted
-       Material upload success/fail
-       Settings saved
-
-7. PERFORMANCE & FINAL TOUCHES
-   - Lazy load all page components with React.lazy + Suspense
-   - Add <title>Psyckie</title> and favicon to frontend/public/
-   - Add a LandingPage at route / (before login):
-       App name, tagline, feature highlights (flashcards, SRS, AI quizzes)
-       Two CTAs: "Sign In" and "Get Started Free"
-       Same red header design
-   - Add 404 NotFoundPage for unmatched routes
-   - README.md: setup instructions for both backend and frontend, env variable list, how to run migrations, how to set up Gmail SMTP app password
-
-Provide all file contents in full. Do not use placeholders.
-```
-
----
-
-## Quick Reference — Phase Summary
-
-| Phase | Focus | Key Output |
-|---|---|---|
-| 1 | PERN Setup + JWT Auth | Express server, PostgreSQL schema, React login/signup |
-| 2 | Topics + Upload + OCR | Topic library, Multer upload, pdf-parse + tesseract.js |
-| 3 | AI Flashcards | Gemini generation, flip card UI, manual CRUD |
-| 4 | Spaced Repetition | SM-2 algorithm, daily review session, rating UI |
-| 5 | Quizzes + Exam Mode | AI MCQ generation, timed exam, results + explainer |
-| 6 | Progress Dashboard | Recharts, stats API, weak topics, streak tracking |
-| 7 | Polish + Mobile + Email | Nodemailer reminders, mobile UI, toasts, skeleton loading |
-
----
-
-> **Tip before each phase:** Paste your current folder tree (`tree -I node_modules`) at the top of the prompt so the AI knows exactly what files already exist and doesn't recreate or overwrite things incorrectly.
-
----
-
-*Document version 2.0 — PERN Stack (PostgreSQL · Express · React · Node.js) · JWT Auth · Gemini AI · Poppins + react-icons/ri*
