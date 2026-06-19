@@ -60,16 +60,140 @@ create table if not exists materials (
 );
 
 alter table if exists materials
-  add column if not exists user_id uuid references users(id) on delete cascade;
+  add column if not exists user_id uuid references users(id) on delete cascade,
+  add column if not exists title text,
+  add column if not exists content text,
+  add column if not exists content_type text not null default 'markdown',
+  add column if not exists source_url text;
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'file_name'
+  ) then
+    execute $sql$
+      update materials
+      set title = coalesce(nullif(title, ''), nullif(file_name, ''), 'Untitled material')
+      where title is null or title = ''
+    $sql$;
+  else
+    update materials
+    set title = coalesce(nullif(title, ''), 'Untitled material')
+    where title is null or title = '';
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'raw_text'
+  ) then
+    execute $sql$
+      update materials
+      set content = coalesce(content, raw_text, '')
+      where content is null
+    $sql$;
+  else
+    update materials
+    set content = coalesce(content, '')
+    where content is null;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'file_type'
+  ) then
+    execute $sql$
+      update materials
+      set content_type = coalesce(nullif(content_type, ''), nullif(file_type, ''), 'markdown')
+      where content_type is null or content_type = ''
+    $sql$;
+  else
+    update materials
+    set content_type = coalesce(nullif(content_type, ''), 'markdown')
+    where content_type is null or content_type = '';
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'file_url'
+  ) then
+    execute $sql$
+      update materials
+      set source_url = coalesce(source_url, file_url)
+      where source_url is null
+    $sql$;
+  end if;
+
+  alter table materials alter column title set not null;
+  alter table materials alter column content set not null;
+  alter table materials alter column content_type set default 'markdown';
+  alter table materials alter column content_type set not null;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'file_name'
+  ) then
+    alter table materials alter column file_name drop not null;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'raw_text'
+  ) then
+    alter table materials alter column raw_text drop not null;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'file_type'
+  ) then
+    alter table materials alter column file_type drop not null;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'materials'
+      and column_name = 'status'
+  ) then
+    alter table materials alter column status drop not null;
+  end if;
+end $$;
 
 create table if not exists flashcards (
   id uuid primary key default gen_random_uuid(),
   topic_id uuid not null references topics(id) on delete cascade,
+  user_id uuid references users(id) on delete cascade,
   question text not null,
   answer text not null,
   difficulty int not null default 1,
   created_at timestamptz not null default now()
 );
+
+alter table if exists flashcards
+  add column if not exists user_id uuid references users(id) on delete cascade;
 
 create table if not exists srs_reviews (
   id uuid primary key default gen_random_uuid(),
@@ -124,10 +248,24 @@ create table if not exists study_sessions (
 create index if not exists idx_materials_topic_id on materials(topic_id);
 create index if not exists idx_materials_user_id on materials(user_id);
 create index if not exists idx_flashcards_topic_id on flashcards(topic_id);
+create index if not exists idx_flashcards_user_id on flashcards(user_id);
 create index if not exists idx_srs_reviews_user_id on srs_reviews(user_id);
 create index if not exists idx_quizzes_topic_id on quizzes(topic_id);
 create index if not exists idx_quiz_attempts_user_id on quiz_attempts(user_id);
 create index if not exists idx_quiz_responses_user_id on quiz_responses(user_id);
 create index if not exists idx_study_sessions_user_id on study_sessions(user_id);
+
+grant usage on schema public to service_role;
+grant select, insert, update, delete on
+  users,
+  topics,
+  materials,
+  flashcards,
+  srs_reviews,
+  quizzes,
+  quiz_attempts,
+  quiz_responses,
+  study_sessions
+to service_role;
 
 notify pgrst, 'reload schema';

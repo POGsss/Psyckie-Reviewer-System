@@ -1,5 +1,24 @@
 const { supabase } = require("../config/db");
 
+const isMissingColumn = (error, column) =>
+  error?.message?.includes(`'${column}' column`) ||
+  error?.message?.includes(`materials.${column} does not exist`) ||
+  (error?.message?.includes(column) && error?.message?.includes("schema cache"));
+
+const normalizeMaterial = (material) => {
+  if (!material) {
+    return material;
+  }
+
+  return {
+    ...material,
+    title: material.title ?? material.file_name ?? "Untitled material",
+    content: material.content ?? material.raw_text ?? "",
+    content_type: material.content_type ?? material.file_type ?? "markdown",
+    source_url: material.source_url ?? material.file_url ?? null,
+  };
+};
+
 async function getAll({ topicId, userId } = {}) {
   let query = supabase
     .from("materials")
@@ -20,7 +39,7 @@ async function getAll({ topicId, userId } = {}) {
     throw error;
   }
 
-  return data;
+  return data.map(normalizeMaterial);
 }
 
 async function getById(id, { userId } = {}) {
@@ -39,7 +58,7 @@ async function getById(id, { userId } = {}) {
     throw error;
   }
 
-  return data;
+  return normalizeMaterial(data);
 }
 
 async function createMaterial({
@@ -50,26 +69,45 @@ async function createMaterial({
   contentType,
   sourceUrl,
 }) {
-  const { data, error } = await supabase
-    .from("materials")
-    .insert([
-      {
-        topic_id: topicId,
-        user_id: userId,
-        title,
-        content,
-        content_type: contentType || "markdown",
-        source_url: sourceUrl || null,
-      },
-    ])
-    .select("*")
-    .single();
+  const currentPayload = {
+    topic_id: topicId,
+    user_id: userId,
+    title,
+    content,
+    content_type: contentType || "markdown",
+    source_url: sourceUrl || null,
+  };
+
+  const legacyPayload = {
+    topic_id: topicId,
+    user_id: userId,
+    file_name: title,
+    raw_text: content,
+    file_type: contentType || "markdown",
+    file_url: sourceUrl || null,
+    status: "processed",
+  };
+
+  const runInsert = async (payload) =>
+    supabase.from("materials").insert([payload]).select("*").single();
+
+  let { data, error } = await runInsert(currentPayload);
+
+  if (
+    error &&
+    (isMissingColumn(error, "content") ||
+      isMissingColumn(error, "title") ||
+      isMissingColumn(error, "content_type") ||
+      isMissingColumn(error, "source_url"))
+  ) {
+    ({ data, error } = await runInsert(legacyPayload));
+  }
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return normalizeMaterial(data);
 }
 
 async function deleteMaterial({ id, userId }) {
