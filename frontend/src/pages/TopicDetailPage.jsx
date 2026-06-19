@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../lib/api";
 import useAuthStore from "../store/authStore";
 import FlashcardsIconUrl from "../assets/Flashcards.svg";
+import MockIconUrl from "../assets/Mock.svg";
 import UploadIconUrl from "../assets/Upload.svg";
 
 const getErrorMessage = (error, fallback) =>
@@ -14,10 +15,12 @@ const TopicDetailPage = () => {
   const user = useAuthStore((state) => state.user);
   const [topic, setTopic] = useState(null);
   const [materials, setMaterials] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [isDeletingTopic, setIsDeletingTopic] = useState(false);
   const [deletingMaterialId, setDeletingMaterialId] = useState(null);
   const [form, setForm] = useState({
@@ -34,14 +37,16 @@ const TopicDetailPage = () => {
       setError("");
 
       try {
-        const [topicResponse, materialsResponse] = await Promise.all([
+        const [topicResponse, materialsResponse, quizzesResponse] = await Promise.all([
           api.get(`/topics/${id}`),
           api.get("/materials", { params: { topic_id: id } }),
+          api.get("/quizzes", { params: { topic_id: id } }),
         ]);
 
         if (isMounted) {
           setTopic(topicResponse.data.topic);
           setMaterials(materialsResponse.data.materials || []);
+          setQuizzes(quizzesResponse.data.quizzes || []);
         }
       } catch (err) {
         if (isMounted) {
@@ -152,6 +157,28 @@ const TopicDetailPage = () => {
     }
   };
 
+  const handleGenerateQuiz = async () => {
+    setFormError("");
+    setIsGeneratingQuiz(true);
+
+    try {
+      const { data } = await api.post("/quizzes/generate", {
+        topic_id: id,
+        question_count: 5,
+      });
+      setQuizzes((current) => [data.quiz, ...current]);
+    } catch (err) {
+      setFormError(
+        getErrorMessage(
+          err,
+          "Unable to generate a quiz. Check Gemini setup and saved materials."
+        )
+      );
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-[14px] p-6 text-[13.5px] text-base-muted shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -220,6 +247,13 @@ const TopicDetailPage = () => {
                 />
                 Flashcards
               </Link>
+              <Link
+                to="/app/mock"
+                className="inline-flex items-center gap-2 rounded-full bg-base-bg px-4 py-2 text-[12.5px] font-semibold text-base-muted transition-colors hover:bg-[#eaecef]"
+              >
+                <img src={MockIconUrl} width="14" height="14" alt="" />
+                Quizzes
+              </Link>
               <span className="rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-base-muted">
                 {topic.subject_area || "BLEPP"}
               </span>
@@ -235,6 +269,69 @@ const TopicDetailPage = () => {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="bg-white rounded-[14px] p-3 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-[15px] font-bold text-base-text">
+                Topic Quizzes
+              </div>
+              <div className="text-[12.5px] text-base-muted mt-0.5">
+                {quizzes.length} practice or mock exam set
+                {quizzes.length === 1 ? "" : "s"} available
+              </div>
+            </div>
+            <button
+              type="button"
+              disabled={isGeneratingQuiz}
+              onClick={handleGenerateQuiz}
+              className="rounded-full bg-base-bg px-4 py-2 text-[12.5px] font-semibold text-base-muted transition-colors hover:bg-[#eaecef] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isGeneratingQuiz ? "Generating..." : "Generate with Gemini"}
+            </button>
+          </div>
+
+          {quizzes.length === 0 ? (
+            <div className="rounded-[10px] bg-base-bg px-3.5 py-4 text-[13.5px] text-base-muted">
+              No quiz for this topic yet. Seed quizzes are available after
+              running the backend seed script.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-[10px]">
+              {quizzes.map((quiz) => (
+                <article
+                  key={quiz.id}
+                  className="rounded-[10px] bg-base-bg px-3.5 py-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-[13.5px] font-bold text-base-text">
+                        {quiz.title}
+                      </h2>
+                      <p className="mt-1 text-[12.5px] text-base-muted">
+                        {quiz.total_questions} questions
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        to={`/app/quiz/${quiz.id}`}
+                        className="rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red"
+                      >
+                        Practice
+                      </Link>
+                      <Link
+                        to={`/app/quiz/${quiz.id}?mode=mock`}
+                        className="rounded-full bg-brand-red px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-brand-dark"
+                      >
+                        Mock
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-[14px] p-3 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">

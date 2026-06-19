@@ -215,25 +215,59 @@ create table if not exists quizzes (
   created_at timestamptz not null default now()
 );
 
+create table if not exists quiz_questions (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references quizzes(id) on delete cascade,
+  question_text text not null,
+  options jsonb not null default '[]'::jsonb,
+  correct_answer text not null,
+  explanation text,
+  order_index int not null default 0,
+  created_at timestamptz not null default now(),
+  constraint quiz_questions_options_array check (jsonb_typeof(options) = 'array')
+);
+
+alter table if exists quiz_questions
+  add column if not exists question_text text,
+  add column if not exists options jsonb not null default '[]'::jsonb,
+  add column if not exists correct_answer text,
+  add column if not exists explanation text,
+  add column if not exists order_index int not null default 0,
+  add column if not exists created_at timestamptz not null default now();
+
 create table if not exists quiz_attempts (
   id uuid primary key default gen_random_uuid(),
   quiz_id uuid not null references quizzes(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
   score numeric(5,2) not null default 0,
+  correct_count int not null default 0,
+  total_questions int not null default 0,
+  mode text not null default 'practice' check (mode in ('practice', 'mock')),
   started_at timestamptz not null default now(),
   completed_at timestamptz
 );
+
+alter table if exists quiz_attempts
+  add column if not exists correct_count int not null default 0,
+  add column if not exists total_questions int not null default 0,
+  add column if not exists mode text not null default 'practice';
 
 create table if not exists quiz_responses (
   id uuid primary key default gen_random_uuid(),
   attempt_id uuid not null references quiz_attempts(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
+  question_id uuid references quiz_questions(id) on delete cascade,
   question text not null,
   correct_answer text,
   user_answer text,
   is_correct boolean,
+  explanation text,
   created_at timestamptz not null default now()
 );
+
+alter table if exists quiz_responses
+  add column if not exists question_id uuid references quiz_questions(id) on delete cascade,
+  add column if not exists explanation text;
 
 create table if not exists study_sessions (
   id uuid primary key default gen_random_uuid(),
@@ -251,8 +285,12 @@ create index if not exists idx_flashcards_topic_id on flashcards(topic_id);
 create index if not exists idx_flashcards_user_id on flashcards(user_id);
 create index if not exists idx_srs_reviews_user_id on srs_reviews(user_id);
 create index if not exists idx_quizzes_topic_id on quizzes(topic_id);
+create index if not exists idx_quiz_questions_quiz_id on quiz_questions(quiz_id);
 create index if not exists idx_quiz_attempts_user_id on quiz_attempts(user_id);
+create index if not exists idx_quiz_attempts_quiz_id on quiz_attempts(quiz_id);
 create index if not exists idx_quiz_responses_user_id on quiz_responses(user_id);
+create index if not exists idx_quiz_responses_attempt_id on quiz_responses(attempt_id);
+create index if not exists idx_quiz_responses_question_id on quiz_responses(question_id);
 create index if not exists idx_study_sessions_user_id on study_sessions(user_id);
 
 grant usage on schema public to service_role;
@@ -263,6 +301,7 @@ grant select, insert, update, delete on
   flashcards,
   srs_reviews,
   quizzes,
+  quiz_questions,
   quiz_attempts,
   quiz_responses,
   study_sessions

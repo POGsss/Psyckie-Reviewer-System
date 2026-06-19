@@ -53,7 +53,10 @@ const Dashboard = () => {
       {/* STATS ROW */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         {/* Card 1 */}
-        <div className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200">
+        <Link
+          to="/app/flashcards"
+          className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200"
+        >
           <div className="flex items-center justify-between">
             <div className="w-[38px] h-[38px] rounded-[10px] bg-red-100 flex items-center justify-center">
               <img src={FlashcardsIconUrl} width="18" height="18" alt="" />
@@ -71,10 +74,13 @@ const Dashboard = () => {
           <div className="text-[12px] font-semibold text-base-muted uppercase tracking-wider truncate">
             Total Flashcards
           </div>
-        </div>
+        </Link>
 
         {/* Card 2 */}
-        <div className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200">
+        <Link
+          to="/app/mock"
+          className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200"
+        >
           <div className="flex items-center justify-between">
             <div className="w-[38px] h-[38px] rounded-[10px] bg-green-100 flex items-center justify-center">
               <img src={ProgressIconUrl} width="18" height="18" alt="" />
@@ -89,10 +95,13 @@ const Dashboard = () => {
           <div className="text-[12px] font-semibold text-base-muted uppercase tracking-wider truncate">
             Avg Quiz Score
           </div>
-        </div>
+        </Link>
 
         {/* Card 3 */}
-        <div className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200">
+        <Link
+          to="/app/mock"
+          className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200"
+        >
           <div className="flex items-center justify-between">
             <div className="w-[38px] h-[38px] rounded-[10px] bg-blue-100 flex items-center justify-center">
               <img src={TopicsIconUrl} width="18" height="18" alt="" />
@@ -108,7 +117,7 @@ const Dashboard = () => {
           <div className="text-[12px] font-semibold text-base-muted uppercase tracking-wider truncate">
             Cards Due Today
           </div>
-        </div>
+        </Link>
 
         {/* Card 4 */}
         <div className="bg-white rounded-[14px] p-3 sm:p-6 flex flex-col gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200">

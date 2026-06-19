@@ -3,6 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import FlashcardsPage from "./pages/FlashcardsPage";
 import LoginPage from "./pages/LoginPage";
+import MockExamPage from "./pages/MockExamPage";
+import QuizResultsPage from "./pages/QuizResultsPage";
+import QuizSessionPage from "./pages/QuizSessionPage";
 import ReviewPage from "./pages/ReviewPage";
 import SignupPage from "./pages/SignupPage";
 import TopicDetailPage from "./pages/TopicDetailPage";
@@ -28,6 +31,9 @@ const App = () => {
         <Route path="topics/:id" element={<TopicDetailPage />} />
         <Route path="topics/:id/flashcards" element={<FlashcardsPage />} />
         <Route path="flashcards" element={<FlashcardsPage />} />
+        <Route path="mock" element={<MockExamPage />} />
+        <Route path="quiz/:id" element={<QuizSessionPage />} />
+        <Route path="quiz/:id/results" element={<QuizResultsPage />} />
         <Route path="review" element={<ReviewPage />} />
         <Route path="upload" element={<Navigate to="/app/topics" replace />} />
       </Route>

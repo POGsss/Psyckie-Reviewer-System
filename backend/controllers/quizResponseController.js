@@ -16,8 +16,15 @@ const getQuizResponses = asyncHandler(async (req, res) => {
 });
 
 const createQuizResponse = asyncHandler(async (req, res) => {
-  const { attempt_id, question, correct_answer, user_answer, is_correct } =
-    req.body;
+  const {
+    attempt_id,
+    question_id,
+    question,
+    correct_answer,
+    user_answer,
+    is_correct,
+    explanation,
+  } = req.body;
 
   if (!attempt_id || !question) {
     res.status(400);
@@ -37,10 +44,12 @@ const createQuizResponse = asyncHandler(async (req, res) => {
   const response = await createResponse({
     userId: req.user.id,
     attemptId: attempt_id,
+    questionId: question_id,
     question,
     correctAnswer: correct_answer,
     userAnswer: user_answer,
     isCorrect: normalizedIsCorrect,
+    explanation,
   });
 
   res.status(201).json({ response });
