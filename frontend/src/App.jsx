@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import FlashcardsPage from "./pages/FlashcardsPage";
 import LoginPage from "./pages/LoginPage";
+import ReviewPage from "./pages/ReviewPage";
 import SignupPage from "./pages/SignupPage";
 import TopicDetailPage from "./pages/TopicDetailPage";
 import TopicsPage from "./pages/TopicsPage";
@@ -24,6 +26,9 @@ const App = () => {
         <Route index element={<Dashboard />} />
         <Route path="topics" element={<TopicsPage />} />
         <Route path="topics/:id" element={<TopicDetailPage />} />
+        <Route path="topics/:id/flashcards" element={<FlashcardsPage />} />
+        <Route path="flashcards" element={<FlashcardsPage />} />
+        <Route path="review" element={<ReviewPage />} />
         <Route path="upload" element={<Navigate to="/app/topics" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/app" replace />} />

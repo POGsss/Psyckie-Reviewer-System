@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../lib/api";
 import useAuthStore from "../store/authStore";
+import FlashcardsIconUrl from "../assets/Flashcards.svg";
 import UploadIconUrl from "../assets/Upload.svg";
 
 const getErrorMessage = (error, fallback) =>
@@ -9,6 +10,7 @@ const getErrorMessage = (error, fallback) =>
 
 const TopicDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [topic, setTopic] = useState(null);
   const [materials, setMaterials] = useState([]);
@@ -16,6 +18,8 @@ const TopicDetailPage = () => {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeletingTopic, setIsDeletingTopic] = useState(false);
+  const [deletingMaterialId, setDeletingMaterialId] = useState(null);
   const [form, setForm] = useState({
     title: "",
     source_url: "",
@@ -103,6 +107,17 @@ const TopicDetailPage = () => {
   const handleDeleteMaterial = async (materialId) => {
     setFormError("");
 
+    const material = materials.find((item) => item.id === materialId);
+    const shouldDelete = window.confirm(
+      `Delete "${material?.title || "this material"}" from this topic?`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingMaterialId(materialId);
+
     try {
       await api.delete(`/materials/${materialId}`);
       setMaterials((current) =>
@@ -110,6 +125,30 @@ const TopicDetailPage = () => {
       );
     } catch (err) {
       setFormError(getErrorMessage(err, "Unable to delete that material."));
+    } finally {
+      setDeletingMaterialId(null);
+    }
+  };
+
+  const handleDeleteTopic = async () => {
+    setFormError("");
+
+    const shouldDelete = window.confirm(
+      `Delete "${topic.title}" and all saved materials and flashcards in it?`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setIsDeletingTopic(true);
+
+    try {
+      await api.delete(`/topics/${topic.id}`);
+      navigate("/app/topics");
+    } catch (err) {
+      setFormError(getErrorMessage(err, "Unable to delete that custom topic."));
+      setIsDeletingTopic(false);
     }
   };
 
@@ -167,9 +206,34 @@ const TopicDetailPage = () => {
                 {topic.description || "No description has been added yet."}
               </p>
             </div>
-            <span className="rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-base-muted">
-              {topic.subject_area || "BLEPP"}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                to={`/app/topics/${topic.id}/flashcards`}
+                className="inline-flex items-center gap-2 rounded-full bg-brand-red px-4 py-2 text-[12.5px] font-semibold text-white transition-colors hover:bg-brand-dark"
+              >
+                <img
+                  src={FlashcardsIconUrl}
+                  width="14"
+                  height="14"
+                  alt=""
+                  className="invert"
+                />
+                Flashcards
+              </Link>
+              <span className="rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-base-muted">
+                {topic.subject_area || "BLEPP"}
+              </span>
+              {!topic.is_preset && (
+                <button
+                  type="button"
+                  onClick={handleDeleteTopic}
+                  disabled={isDeletingTopic}
+                  className="rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isDeletingTopic ? "Deleting..." : "Delete topic"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -229,10 +293,13 @@ const TopicDetailPage = () => {
                       {canDelete && (
                         <button
                           type="button"
+                          disabled={deletingMaterialId === material.id}
                           onClick={() => handleDeleteMaterial(material.id)}
-                          className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red"
+                          className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Delete
+                          {deletingMaterialId === material.id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       )}
                     </div>

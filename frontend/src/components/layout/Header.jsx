@@ -6,6 +6,7 @@ import logoSolidUrl from "../../assets/logo_solid.svg";
 import DashboardIconUrl from "../../assets/Dashboard.svg";
 import TopicsIconUrl from "../../assets/Topics.svg";
 import FlashcardsIconUrl from "../../assets/Flashcards.svg";
+import BrainIconUrl from "../../assets/Brain.svg";
 import MockIconUrl from "../../assets/Mock.svg";
 import ProgressIconUrl from "../../assets/Progress.svg";
 import UploadIconUrl from "../../assets/Upload.svg";
@@ -23,6 +24,7 @@ const Header = () => {
     { to: "/app", label: "Dashboard", icon: DashboardIconUrl },
     { to: "/app/topics", label: "Topics", icon: TopicsIconUrl },
     { to: "/app/flashcards", label: "Flashcards", icon: FlashcardsIconUrl },
+    { to: "/app/review", label: "Review", icon: BrainIconUrl },
     { to: "/app/mock", label: "Mock Exam", icon: MockIconUrl },
     { to: "/app/progress", label: "Progress", icon: ProgressIconUrl },
     { to: "/app/upload", label: "Upload", icon: UploadIconUrl },
@@ -99,7 +101,10 @@ const Header = () => {
           </div>
 
           {/* Consult Button / Mobile Toggle */}
-          <button className="hidden items-center gap-[6px] whitespace-nowrap rounded-[20px] bg-white px-[18px] py-[7px] text-[13px] font-semibold text-brand-red transition-opacity hover:opacity-90 lg:flex">
+          <Link
+            to="/app/review"
+            className="hidden items-center gap-[6px] whitespace-nowrap rounded-[20px] bg-white px-[18px] py-[7px] text-[13px] font-semibold text-brand-red transition-opacity hover:opacity-90 lg:flex"
+          >
             <svg
               width="13"
               height="13"
@@ -111,7 +116,7 @@ const Header = () => {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             Start Review
-          </button>
+          </Link>
 
           {/* Hamburger (Mobile) */}
           <button
@@ -160,7 +165,11 @@ const Header = () => {
               {link.label}
             </Link>
           ))}
-           <button className="mt-2 flex items-center justify-center gap-[6px] whitespace-nowrap rounded-[20px] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-brand-red transition-opacity hover:opacity-90">
+          <Link
+            to="/app/review"
+            onClick={() => setMobileMenuOpen(false)}
+            className="mt-2 flex items-center justify-center gap-[6px] whitespace-nowrap rounded-[20px] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-brand-red transition-opacity hover:opacity-90"
+          >
             <svg
               width="14"
               height="14"
@@ -172,7 +181,7 @@ const Header = () => {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             Start Review
-          </button>
+          </Link>
         </nav>
       )}
     </>

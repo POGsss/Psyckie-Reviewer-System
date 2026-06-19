@@ -21,6 +21,7 @@ const TopicsPage = () => {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [deletingTopicId, setDeletingTopicId] = useState(null);
   const [form, setForm] = useState({
     title: "",
     subject_area: "Custom",
@@ -96,11 +97,24 @@ const TopicsPage = () => {
   const handleDeleteTopic = async (topicId) => {
     setFormError("");
 
+    const topic = topics.find((item) => item.id === topicId);
+    const shouldDelete = window.confirm(
+      `Delete "${topic?.title || "this custom topic"}" and its saved materials?`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingTopicId(topicId);
+
     try {
       await api.delete(`/topics/${topicId}`);
       setTopics((current) => current.filter((topic) => topic.id !== topicId));
     } catch (err) {
       setFormError(getErrorMessage(err, "Unable to delete that custom topic."));
+    } finally {
+      setDeletingTopicId(null);
     }
   };
 
@@ -149,10 +163,11 @@ const TopicsPage = () => {
       {!topic.is_preset && (
         <button
           type="button"
+          disabled={deletingTopicId === topic.id}
           onClick={() => handleDeleteTopic(topic.id)}
-          className="mt-3 rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red"
+          className="mt-3 rounded-full bg-base-bg px-3 py-1.5 text-[12px] font-semibold text-base-muted transition-colors hover:bg-brand-soft hover:text-brand-red disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Delete custom topic
+          {deletingTopicId === topic.id ? "Deleting..." : "Delete custom topic"}
         </button>
       )}
     </div>

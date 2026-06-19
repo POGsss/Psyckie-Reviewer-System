@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../lib/api";
 import useAuthStore from "../store/authStore";
 
 // SVGs
@@ -13,6 +15,38 @@ import BagIconUrl from "../assets/Bag.svg";
 
 const Dashboard = () => {
   const user = useAuthStore((state) => state.user);
+  const [reviewStats, setReviewStats] = useState(null);
+  const [statsError, setStatsError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadReviewStats = async () => {
+      try {
+        const { data } = await api.get("/srs-reviews/stats");
+        if (isMounted) {
+          setReviewStats(data.stats);
+          setStatsError("");
+        }
+      } catch (error) {
+        if (isMounted) {
+          setStatsError(
+            error?.response?.data?.message || "Unable to load review stats."
+          );
+        }
+      }
+    };
+
+    loadReviewStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const dueCount = reviewStats?.due_count ?? 0;
+  const dueTopics = reviewStats?.due_by_topic || [];
+  const dueTopicIcons = [BrainIconUrl, ChartIconUrl, BagIconUrl];
 
   return (
     <>
@@ -68,7 +102,7 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="text-[28px] font-bold -tracking-0.5 text-base-text">
-            14{" "}
+            {dueCount}{" "}
             <span className="text-[14px] font-medium text-brand-red">due</span>
           </div>
           <div className="text-[12px] font-semibold text-base-muted uppercase tracking-wider truncate">
@@ -332,27 +366,42 @@ const Dashboard = () => {
               <div className="text-[15px] font-bold text-base-text">
                 Due Today
               </div>
-              <button className="inline-flex items-center gap-[6px] bg-brand-red text-white rounded-[20px] px-[14px] py-[6px] text-[12px] font-semibold cursor-pointer hover:bg-brand-dark transition-colors">
+              <Link
+                to="/app/review"
+                className="inline-flex items-center gap-[6px] bg-brand-red text-white rounded-[20px] px-[14px] py-[6px] text-[12px] font-semibold cursor-pointer hover:bg-brand-dark transition-colors"
+              >
                 Review All
-              </button>
+              </Link>
             </div>
             <div className="flex flex-col gap-2">
-              {[
-                { icon: BrainIconUrl, label: "Psych Assessment", count: 6 },
-                { icon: ChartIconUrl, label: "Stats & Research", count: 5 },
-                { icon: BagIconUrl, label: "Industrial Psych", count: 3 },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-center gap-2.5 px-3 py-[9px] bg-base-bg rounded-[8px] text-[13px]"
-                >
-                  <img src={item.icon} width="18" height="18" alt="" />
-                  <span>{item.label}</span>
-                  <span className="bg-brand-red text-white text-[11px] font-bold rounded-[10px] px-[7px] py-[2px] ml-auto flex-shrink-0">
-                    {item.count}
-                  </span>
+              {statsError ? (
+                <div className="rounded-[8px] bg-red-50 px-3 py-[9px] text-[12.5px] font-medium text-red-700">
+                  {statsError}
                 </div>
-              ))}
+              ) : dueTopics.length === 0 ? (
+                <div className="rounded-[8px] bg-base-bg px-3 py-[12px] text-[13px] text-base-muted">
+                  No cards due right now.
+                </div>
+              ) : (
+                dueTopics.slice(0, 4).map((item, idx) => (
+                  <Link
+                    key={item.topic_id}
+                    to="/app/review"
+                    className="flex items-center justify-center gap-2.5 px-3 py-[9px] bg-base-bg rounded-[8px] text-[13px] hover:bg-[#eaecef] transition-colors"
+                  >
+                    <img
+                      src={dueTopicIcons[idx % dueTopicIcons.length]}
+                      width="18"
+                      height="18"
+                      alt=""
+                    />
+                    <span className="truncate">{item.title}</span>
+                    <span className="bg-brand-red text-white text-[11px] font-bold rounded-[10px] px-[7px] py-[2px] ml-auto flex-shrink-0">
+                      {item.count}
+                    </span>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         </div>
