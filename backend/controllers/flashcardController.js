@@ -6,6 +6,7 @@ const {
   getById,
   updateFlashcard: updateOwnedFlashcard,
 } = require("../models/flashcardModel");
+const { createReview } = require("../models/srsReviewModel");
 const { getById: getTopicById } = require("../models/topicModel");
 
 const normalizeDifficulty = (value) => {
@@ -65,6 +66,12 @@ const createFlashcard = asyncHandler(async (req, res) => {
     question: question.trim(),
     answer: answer.trim(),
     difficulty: normalizeDifficulty(difficulty),
+  });
+
+  await createReview({
+    userId: req.user.id,
+    flashcardId: flashcard.id,
+    dueAt: new Date().toISOString(),
   });
 
   res.status(201).json({ flashcard });
