@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 
 // SVGs
@@ -110,13 +111,16 @@ const Dashboard = () => {
                   Your mastery across all BLEPP subjects
                 </div>
               </div>
-              <button className="flex items-center gap-1 text-[12.5px] font-medium text-base-muted cursor-pointer px-2.5 py-1 rounded-full bg-base-bg border-none hover:bg-gray-200 transition-colors">
-                Last 30 Days ▾
-              </button>
+              <Link
+                to="/app/topics"
+                className="flex items-center gap-1 text-[12.5px] font-medium text-base-muted cursor-pointer px-2.5 py-1 rounded-full bg-base-bg border-none hover:bg-gray-200 transition-colors"
+              >
+                View Library
+              </Link>
             </div>
             <div className="flex flex-col gap-[10px]">
               {/* Topic Row 1 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-brand-red flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Psychological Assessment
@@ -127,9 +131,9 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   78%
                 </span>
-              </div>
+              </Link>
               {/* Topic Row 2 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-base-green flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Abnormal Psychology
@@ -140,9 +144,9 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   91%
                 </span>
-              </div>
+              </Link>
               {/* Topic Row 3 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-base-blue flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Industrial / Org. Psychology
@@ -153,9 +157,9 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   62%
                 </span>
-              </div>
+              </Link>
               {/* Topic Row 4 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-base-orange flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Research Methods & Stats
@@ -166,9 +170,9 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   55%
                 </span>
-              </div>
+              </Link>
               {/* Topic Row 5 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-purple-500 flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Theories of Personality
@@ -179,9 +183,9 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   84%
                 </span>
-              </div>
+              </Link>
               {/* Topic Row 6 */}
-              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
+              <Link to="/app/topics" className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] bg-base-bg hover:bg-[#eaecef] transition-colors cursor-pointer">
                 <div className="w-[10px] h-[10px] rounded-full bg-pink-500 flex-shrink-0" />
                 <span className="text-[13.5px] font-medium flex-1 truncate">
                   Developmental Psychology
@@ -192,7 +196,7 @@ const Dashboard = () => {
                 <span className="text-[12px] font-semibold text-base-muted w-[30px] text-right inline-block">
                   70%
                 </span>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -209,17 +213,20 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="border-2 border-dashed border-base-border rounded-[10px] p-3 sm:p-6 text-center cursor-pointer transition-all hover:border-brand-red hover:bg-[#fff5f5] mb-[14px]">
+            <Link
+              to="/app/topics"
+              className="block border-2 border-dashed border-base-border rounded-[10px] p-3 sm:p-6 text-center cursor-pointer transition-all hover:border-brand-red hover:bg-[#fff5f5] mb-[14px]"
+            >
               <div className="text-[28px] mb-2 flex justify-center">
                 <img src={UploadIconUrl} width="28" height="28" alt="" />
               </div>
               <div className="text-[13.5px] font-medium text-base-text">
-                Drop your file here or click to browse
+                Open a topic to add review material
               </div>
               <div className="text-[12px] text-base-muted mt-[3px]">
-                Supports PDF, JPG, PNG
+                Notes and source links are available now
               </div>
-            </div>
+            </Link>
 
             <div className="relative mb-3">
               <select
@@ -244,9 +251,12 @@ const Dashboard = () => {
               </span>
             </div>
 
-            <button className="inline-flex items-center gap-[6px] bg-brand-red text-white rounded-full px-[20px] py-[9px] text-[13.5px] font-semibold cursor-pointer hover:bg-brand-dark transition-all float-right">
-              Process with AI
-            </button>
+            <Link
+              to="/app/topics"
+              className="inline-flex items-center gap-[6px] bg-brand-red text-white rounded-full px-[20px] py-[9px] text-[13.5px] font-semibold cursor-pointer hover:bg-brand-dark transition-all float-right"
+            >
+              Add Material
+            </Link>
             <div style={{ clear: "both" }} />
           </div>
         </div>

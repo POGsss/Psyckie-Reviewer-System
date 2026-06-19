@@ -91,7 +91,7 @@ Turn the existing read-only topic and material endpoints into a usable topic lib
 
 - Preserve the current topic design language shown in the dashboard.
 - Add real frontend routes for topic browsing and topic detail pages.
-- Support preset topics and user-created custom topics if the schema is expanded for ownership.
+- Support preset topics and user-created custom topics using the current `topics` fields: `title`, `description`, `order_index`, `user_id`, `subject_area`, and `is_preset`.
 - Support material listing per topic.
 - Implement material upload only after the material data model is clearly aligned with the target behavior.
 - Keep protected routes protected where user-owned data is involved.
@@ -107,7 +107,7 @@ Turn the existing read-only topic and material endpoints into a usable topic lib
 
 - Add frontend pages for topics and topic detail using the current red header shell.
 - Connect topic lists to `GET /api/topics`.
-- Add backend create and delete behavior for custom topics if ownership is added.
+- Add backend create and delete behavior for custom topics using `user_id` ownership.
 - Add material creation or upload behavior based on the current `materials` table or a deliberate migration.
 - Add upload middleware only when file upload is actually implemented.
 - Add OCR processing only after the file upload path works end to end.

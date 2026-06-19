@@ -30,9 +30,11 @@ const LoginPage = () => {
     }
 
     try {
-      console.log("Submitting login form...");
-      await login({ email, password });
-      console.log("Login successful, navigating to dashboard...");
+      const didLogin = await login({ email, password });
+      if (!didLogin) {
+        return;
+      }
+
       navigate("/");
     } catch (err) {
       console.error("Login Error in component:", err);

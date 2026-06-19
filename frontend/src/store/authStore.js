@@ -22,7 +22,7 @@ const useAuthStore = create((set) => ({
       const { data } = await api.get("/auth/me");
       set({ user: data.user, token, isInitializing: false, error: null });
       return true;
-    } catch (error) {
+    } catch {
       localStorage.removeItem(TOKEN_KEY);
       set({ user: null, token: null, isInitializing: false, error: null });
       return false;

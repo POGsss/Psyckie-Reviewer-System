@@ -33,4 +33,37 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { protect };
+const optionalAuth = asyncHandler(async (req, res, next) => {
+  const authHeader = req.headers.authorization || "";
+
+  if (!authHeader.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    next();
+    return;
+  }
+
+  if (!process.env.JWT_SECRET) {
+    res.status(500);
+    throw new Error("JWT_SECRET is not set");
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await findById(decoded.id);
+
+    if (user) {
+      req.user = user;
+    }
+  } catch {
+    req.user = null;
+  }
+
+  next();
+});
+
+module.exports = { protect, optionalAuth };

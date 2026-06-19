@@ -38,7 +38,11 @@ const SignupPage = () => {
     }
 
     try {
-      await signup({ fullName, email, password });
+      const didSignup = await signup({ fullName, email, password });
+      if (!didSignup) {
+        return;
+      }
+
       navigate("/");
     } catch (err) {
       console.error(err);

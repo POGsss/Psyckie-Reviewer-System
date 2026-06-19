@@ -28,6 +28,11 @@ const Header = () => {
     { to: "/app/upload", label: "Upload", icon: UploadIconUrl },
   ];
 
+  const isActiveLink = (to) =>
+    to === "/app"
+      ? location.pathname === to
+      : location.pathname === to || location.pathname.startsWith(`${to}/`);
+
   return (
     <>
       <header className="sticky top-0 z-50 flex items-stretch justify-between gap-3 bg-brand-red px-[18px] py-[10px] sm:px-[28px] sm:py-[14px]">
@@ -54,7 +59,7 @@ const Header = () => {
                   <Link
                     to={link.to}
                     className={`flex items-center gap-[6px] whitespace-nowrap rounded-[6px] px-[10px] py-[5px] text-[13px] font-medium transition-colors ${
-                      location.pathname === link.to
+                      isActiveLink(link.to)
                         ? "bg-white/20 text-white"
                         : "text-white/80 hover:bg-white/10 hover:text-white"
                     }`}
@@ -63,7 +68,7 @@ const Header = () => {
                       src={link.icon}
                       alt={link.label}
                       className={`h-[14px] w-[14px] shrink-0 transition-opacity ${
-                        location.pathname === link.to
+                        isActiveLink(link.to)
                           ? "opacity-100"
                           : "opacity-80"
                       }`}
@@ -141,7 +146,7 @@ const Header = () => {
               to={link.to}
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-2 rounded-lg px-3 py-[10px] text-[14px] font-medium transition-colors ${
-                location.pathname === link.to
+                isActiveLink(link.to)
                   ? "bg-white/15 text-white"
                   : "text-white/90 hover:bg-white/15 hover:text-white"
               }`}

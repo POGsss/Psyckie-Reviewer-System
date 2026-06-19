@@ -170,7 +170,7 @@ Current API routes:
 Current tables:
 
 - `users`: app-managed users with email, password hash, and full name.
-- `topics`: preset topic catalog.
+- `topics`: preset and future user-owned topic catalog. Current label column is `title`; `user_id` is null for preset topics, and `is_preset` marks seeded rows.
 - `materials`: topic-linked content records.
 - `flashcards`: topic-linked cards with question, answer, and difficulty.
 - `srs_reviews`: per-user flashcard scheduling records.
